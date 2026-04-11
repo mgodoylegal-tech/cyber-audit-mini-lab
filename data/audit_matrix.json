@@ -189,33 +189,6 @@
     "consecuencia_potencial": "Incidentes no detectados en tiempo, incumplimiento de obligaciones de notificación, daño extendido y mayor exposición regulatoria."
   },
   {
-    "id": 9,
-    "dominio": "Responder",
-    "riesgo": "Ausencia de plan formal de respuesta a incidentes y notificación tardía al regulador",
-    "objetivo_control": "Garantizar una respuesta ordenada, documentada y dentro de los plazos regulatorios ante cualquier incidente de seguridad.",
-    "control_esperado": "Plan de Respuesta a Incidentes (IRP) aprobado, con roles definidos, plazos de notificación y protocolo de comunicación al BCRA y clientes afectados.",
-    "evidencia_minima": {
-      "diseno": "Documento IRP aprobado por Directorio con árbol de decisión y plazos de notificación.",
-      "funcionamiento": "Registro de simulacros de respuesta ejecutados y evidencia de notificaciones realizadas en incidentes anteriores."
-    },
-    "responsable": "CISO / Legal / Compliance",
-    "frecuencia": "Ante cada incidente / Simulacro semestral",
-    "criterio_evaluacion": "Notificación al regulador dentro de las 72 horas del incidente y documentación completa del proceso de respuesta.",
-    "madurez": 1,
-    "hallazgo_potencial": "Ausencia de procedimiento formal. Ante un incidente real, la organización improvisa la respuesta sin roles claros ni plazos definidos.",
-    "impacto": "Crítico",
-    "prioridad": "Crítica",
-    "plan_remediacion": "Redactar el IRP con participación del área legal, definir el árbol de notificación y ejecutar un simulacro tabletop en los próximos 60 días.",
-    "implicancia_compliance": "Riesgo regulatorio sectorial",
-    "estado_control": "No implementado",
-    "probabilidad": 4,
-    "ultima_revision": "2025-05-10",
-    "observacion_auditor": "No existe IRP documentado. En el único incidente registrado del año, la respuesta tardó 11 días en comunicarse internamente y nunca se notificó al regulador.",
-    "riesgo_legal": "Incumplimiento de la obligación de notificación de incidentes exigida por la Comunicación A 6375 del BCRA y normativa de protección de datos. La demora en notificar agrava la responsabilidad institucional y habilita sanciones administrativas.",
-    "por_que_importa": "Sin un plan previo, ante un incidente real el caos es inevitable. Cada hora sin respuesta coordinada amplifica el daño técnico, reputacional y regulatorio. El regulador no acepta 'no sabíamos cómo actuar' como defensa.",
-    "consecuencia_potencial": "Multas por notificación tardía, responsabilidad civil frente a clientes afectados, intervención regulatoria y daño reputacional severo ante la opinión pública."
-  },
-  {
     "id": 8,
     "dominio": "Detectar",
     "riesgo": "Falta de detección de identidades comprometidas por ausencia de análisis de comportamiento (UEBA)",
@@ -243,6 +216,33 @@
     "consecuencia_potencial": "Exfiltración silenciosa de datos de clientes, fraude interno no detectado y responsabilidad civil y penal por falta de controles adecuados."
   },
   {
+    "id": 9,
+    "dominio": "Responder",
+    "riesgo": "Ausencia de plan formal de respuesta a incidentes y notificación tardía al regulador",
+    "objetivo_control": "Garantizar una respuesta ordenada, documentada y dentro de los plazos regulatorios ante cualquier incidente de seguridad.",
+    "control_esperado": "Plan de Respuesta a Incidentes (IRP) aprobado, con roles definidos, plazos de notificación y protocolo de comunicación al BCRA y clientes afectados.",
+    "evidencia_minima": {
+      "diseno": "Documento IRP aprobado por Directorio con árbol de decisión y plazos de notificación.",
+      "funcionamiento": "Registro de simulacros de respuesta ejecutados y evidencia de notificaciones realizadas en incidentes anteriores."
+    },
+    "responsable": "CISO / Legal / Compliance",
+    "frecuencia": "Ante cada incidente / Simulacro semestral",
+    "criterio_evaluacion": "Notificación al regulador dentro de las 72 horas del incidente y documentación completa del proceso de respuesta.",
+    "madurez": 1,
+    "hallazgo_potencial": "Ausencia de procedimiento formal. Ante un incidente real, la organización improvisa la respuesta sin roles claros ni plazos definidos.",
+    "impacto": "Crítico",
+    "prioridad": "Crítica",
+    "plan_remediacion": "Redactar el IRP con participación del área legal, definir el árbol de notificación y ejecutar un simulacro tabletop en los próximos 60 días.",
+    "implicancia_compliance": "Riesgo regulatorio sectorial",
+    "estado_control": "No implementado",
+    "probabilidad": 4,
+    "ultima_revision": "2025-05-10",
+    "observacion_auditor": "No existe IRP documentado. En el único incidente registrado del año, la respuesta tardó 11 días en comunicarse internamente y nunca se notificó al regulador.",
+    "riesgo_legal": "Incumplimiento de la obligación de notificación de incidentes exigida por la Comunicación A 6375 del BCRA y normativa de protección de datos. La demora en notificar agrava la responsabilidad institucional y habilita sanciones administrativas.",
+    "por_que_importa": "Sin un plan previo, ante un incidente real el caos es inevitable. Cada hora sin respuesta coordinada amplifica el daño técnico, reputacional y regulatorio. El regulador no acepta 'no sabíamos cómo actuar' como defensa.",
+    "consecuencia_potencial": "Multas por notificación tardía, responsabilidad civil frente a clientes afectados, intervención regulatoria y daño reputacional severo ante la opinión pública."
+  },
+  {
     "id": 10,
     "dominio": "Responder",
     "riesgo": "Ausencia de procedimiento de contención y análisis forense ante incidentes de seguridad",
@@ -268,5 +268,32 @@
     "riesgo_legal": "La falta de preservación de evidencia digital impide probar el incidente, identificar responsables y defender a la organización en litigios. La cadena de custodia rota invalida cualquier prueba ante un tribunal o regulador.",
     "por_que_importa": "En fraude bancario digital, la evidencia forense es la diferencia entre recuperar fondos y no hacerlo. Un perito forense no puede trabajar sobre evidencia que no fue preservada correctamente desde el primer momento.",
     "consecuencia_potencial": "Incapacidad de probar el fraude, pérdida de acciones legales contra el atacante, responsabilidad frente al cliente afectado y multas regulatorias por mala gestión del incidente."
+  },
+  {
+    "id": 11,
+    "dominio": "Recuperar",
+    "riesgo": "Falsa garantía de recuperabilidad por ausencia de pruebas de restauración de backups",
+    "objetivo_control": "Verificar que los respaldos son efectivamente operativos y recuperables dentro del RTO/RPO definido antes de que ocurra un desastre.",
+    "control_esperado": "Plan periódico de pruebas de restauración integral con métricas de RTO/RPO medidas, actas de resultado firmadas y registro de hallazgos corregidos.",
+    "evidencia_minima": {
+      "diseno": "Procedimiento de pruebas de restauración con criterios de éxito, RTO/RPO definidos y calendario aprobado por el BCP Owner.",
+      "funcionamiento": "Actas de pruebas de restauración ejecutadas en los últimos 12 meses, con tiempos medidos, resultados documentados y firma del responsable."
+    },
+    "responsable": "BCP / IT / Auditoría Interna",
+    "frecuencia": "Trimestral",
+    "criterio_evaluacion": "Restauración exitosa del 100% de los sistemas críticos dentro del RTO definido, con acta firmada y sin hallazgos abiertos de pruebas anteriores.",
+    "madurez": 1,
+    "hallazgo_potencial": "Backups configurados en papel pero nunca restaurados. Ante un desastre real, el sistema de recuperación falla y la organización descubre que sus respaldos no funcionan cuando ya es demasiado tarde.",
+    "impacto": "Crítico",
+    "prioridad": "Alta",
+    "plan_remediacion": "Establecer calendario trimestral de pruebas de restauración, designar responsable técnico y del BCP, documentar resultados con acta formal y corregir hallazgos antes de la siguiente prueba.",
+    "implicancia_compliance": "Riesgo contractual",
+    "estado_control": "No implementado",
+    "probabilidad": 4,
+    "ultima_revision": "2026-01-10",
+    "observacion_auditor": "Backups configurados pero sin evidencia de prueba de restauración en los últimos 18 meses. Ante consulta, el área IT respondió 'asumimos que funcionan'. Sin acta de resultado, sin RTO medido, sin responsable asignado.",
+    "riesgo_legal": "Sin pruebas documentadas de restauración, el BCP carece de sustento factual. Ante un incidente, la organización no puede demostrar que tomó medidas razonables para garantizar la continuidad del servicio. Incumplimiento de obligaciones de continuidad operacional exigidas por normativa sectorial.",
+    "por_que_importa": "Un backup que nunca fue restaurado es una suposición, no una garantía. La pregunta crítica no es '¿tenemos backup?' sino '¿podemos recuperar en tiempo y forma?'. La diferencia la determina una prueba documentada, no una creencia.",
+    "consecuencia_potencial": "Fallo total de recuperación ante desastre, pérdida de datos irrecuperable, incumplimiento de SLAs contractuales, responsabilidad civil por interrupción del servicio y exposición regulatoria por BCP no probado."
   }
 ]

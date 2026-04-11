@@ -16,7 +16,7 @@ Está alineado al **NIST Cybersecurity Framework (CSF)** y pensado desde la mira
 
 ## Qué hace (v1.1)
 
-- Matriz de **10 controles en los 5 dominios NIST CSF**: Identificar, Proteger, Detectar, Responder, Recuperar
+- Matriz de **11 controles en los 5 dominios NIST CSF**: Identificar, Proteger, Detectar, Responder, Recuperar
 - Scoring de riesgo: inherente (impacto × probabilidad) y residual (ajustado por madurez)
 - Estado del control por cada ítem: No implementado / Parcial / Implementado / Validado
 - Filtros por dominio, prioridad, impacto, estado y compliance
@@ -91,6 +91,7 @@ Cubre los 5 dominios del NIST CSF.
 | 08 | Detectar | Identidades comprometidas sin UEBA |
 | 09 | Responder | Plan de respuesta a incidentes / notificación BCRA |
 | 10 | Responder | Contención y análisis forense |
+| 11 | Recuperar | Falsa garantía de recuperabilidad — backups sin prueba |
 
 ---
 
