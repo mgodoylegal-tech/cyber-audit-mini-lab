@@ -16,7 +16,7 @@ Está alineado al **NIST Cybersecurity Framework (CSF)** y pensado desde la mira
 
 ## Qué hace (v1.1)
 
-- Matriz de 8 controles en 4 dominios NIST: Identificar, Proteger, Detectar, Recuperar
+- Matriz de **10 controles en los 5 dominios NIST CSF**: Identificar, Proteger, Detectar, Responder, Recuperar
 - Scoring de riesgo: inherente (impacto × probabilidad) y residual (ajustado por madurez)
 - Estado del control por cada ítem: No implementado / Parcial / Implementado / Validado
 - Filtros por dominio, prioridad, impacto, estado y compliance
@@ -72,6 +72,25 @@ npx serve .
 ```
 
 Requiere servidor local (usa `fetch()` para cargar el JSON).
+
+---
+
+## Controles incluidos
+
+Cubre los 5 dominios del NIST CSF.
+
+| # | Dominio | Riesgo |
+|---|---------|--------|
+| 01 | Identificar | Shadow IT / IA no autorizada |
+| 02 | Proteger | Robo de credenciales / MFA |
+| 03 | Proteger | Vulnerabilidades en software desactualizado |
+| 04 | Proteger | Ingeniería social y phishing con IA |
+| 05 | Recuperar | Ransomware / continuidad del negocio |
+| 06 | Identificar | Riesgo en cadena de proveedores |
+| 07 | Detectar | Ausencia de monitoreo continuo (SIEM) |
+| 08 | Detectar | Identidades comprometidas sin UEBA |
+| 09 | Responder | Plan de respuesta a incidentes / notificación BCRA |
+| 10 | Responder | Contención y análisis forense |
 
 ---
 
