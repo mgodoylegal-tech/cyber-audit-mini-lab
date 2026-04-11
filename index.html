@@ -13,9 +13,9 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <span class="brand-tag">[ LAB · v1.1 ]</span>
+        <span class="brand-tag">[ LAB · v1.2 ]</span>
         <h1>Cyber Audit<br><em>Mini Lab</em></h1>
-        <p class="brand-desc">Prototipo de matriz de auditoría de ciberseguridad con enfoque en riesgo operativo, controles, evidencia mínima y compliance</p>
+        <p class="brand-desc">Prototipo de herramienta de auditoría operativa · 11 controles en los 5 dominios NIST CSF · Identificar → Proteger → Detectar → Responder → Recuperar</p>
       </div>
       <div class="header-meta">
         <div class="meta-item">
@@ -28,11 +28,12 @@
         </div>
         <div class="meta-item">
           <span class="meta-label">Versión</span>
-          <span class="meta-value status-dot">Prototipo v1.1</span>
+          <span class="meta-value status-dot">Prototipo v1.2</span>
         </div>
       </div>
     </div>
   </header>
+
   <main class="container">
     <section class="summary" id="summary"></section>
 
@@ -51,13 +52,22 @@
           <option value="">Todo impacto</option>
           <option value="Crítico">Crítico</option>
           <option value="Alto">Alto</option>
+          <option value="Medio">Medio</option>
         </select>
         <select id="filterEstado" class="filter-select">
-          <option value="">Todo estado</option>
+          <option value="">Todo estado control</option>
           <option value="No implementado">No implementado</option>
           <option value="Parcial">Parcial</option>
           <option value="Implementado">Implementado</option>
           <option value="Validado">Validado</option>
+        </select>
+        <select id="filterHallazgo" class="filter-select">
+          <option value="">Todo hallazgo</option>
+          <option value="Abierto">Abierto</option>
+          <option value="En curso">En curso</option>
+          <option value="Mitigado">Mitigado</option>
+          <option value="Aceptado">Aceptado</option>
+          <option value="Cerrado">Cerrado</option>
         </select>
         <select id="filterCompliance" class="filter-select">
           <option value="">Toda implicancia</option>
@@ -79,12 +89,12 @@
             <tr>
               <th>#</th>
               <th>Dominio</th>
-              <th>Riesgo</th>
-              <th>Impacto</th>
-              <th>Prioridad</th>
-              <th>Estado</th>
-              <th>Riesgo I→R</th>
-              <th>Madurez</th>
+              <th>Riesgo identificado</th>
+              <th class="sortable" data-sort="impacto" onclick="sortBy('impacto')">Impacto</th>
+              <th>Estado control</th>
+              <th class="sortable" data-sort="estado_hallazgo" onclick="sortBy('estado_hallazgo')">Hallazgo</th>
+              <th class="sortable" data-sort="riesgo_inherente" onclick="sortBy('riesgo_inherente')">Riesgo I→R ↕</th>
+              <th>Efectividad D·O</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
@@ -100,7 +110,7 @@
 
     <section class="detail-panel" id="detailPanel">
       <div class="detail-header">
-        <span class="detail-tag">DETALLE DEL CONTROL</span>
+        <span class="detail-tag">ANÁLISIS DEL CONTROL</span>
         <span class="detail-hint" id="detailHint">Seleccioná un control para ver el análisis completo</span>
       </div>
       <div id="detailContent" class="detail-empty">
@@ -114,7 +124,7 @@
 
   <footer class="footer">
     <span>Cyber Audit Mini Lab · Prototipo de portfolio — <a href="https://github.com/mgodoylegal-tech" target="_blank">mgodoylegal-tech</a></span>
-    <span>GRC · Legal-Tech · Fraude Bancario Digital</span>
+    <span>GRC · Legal-Tech · Fraude Bancario Digital · NIST CSF</span>
   </footer>
   <script src="script.js"></script>
 </body>
