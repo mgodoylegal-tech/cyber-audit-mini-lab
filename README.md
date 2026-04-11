@@ -1,106 +1,95 @@
 # Cyber Audit Mini Lab
 
-> Matriz de auditoría operativa en ciberseguridad · Riesgo · Control · Compliance
+> Prototipo de matriz de auditoría de ciberseguridad con enfoque en riesgo operativo, controles, evidencia mínima y compliance.
 
 **Live demo →** [mgodoylegal-tech.github.io/cyber-audit-mini-lab](https://mgodoylegal-tech.github.io/cyber-audit-mini-lab)
 
 ---
 
-## ¿Qué es este proyecto?
+## Qué es esto
 
-Herramienta web interactiva que implementa una matriz de auditoría de controles de ciberseguridad alineada al **NIST Cybersecurity Framework (CSF)**. Diseñada desde una perspectiva **GRC / Legal-Tech**, permite visualizar, filtrar y analizar riesgos operativos con sus controles esperados, evidencia mínima aceptable e implicancias de compliance.
+Un prototipo funcional de herramienta de auditoría, construido como activo de portfolio profesional. No es una herramienta de producción ni un SaaS. Es un laboratorio para demostrar criterio técnico y legal en la intersección de GRC, ciberseguridad y derecho.
 
-Construido como parte de un portfolio profesional en la intersección de derecho, tecnología y ciberseguridad.
+Está alineado al **NIST Cybersecurity Framework (CSF)** y pensado desde la mirada de quien audita: ¿qué evidencia existe? ¿qué riesgo legal hay si no existe? ¿quién responde?
 
 ---
 
-## Funcionalidades
+## Qué hace (v1.1)
 
-- **Matriz de controles** organizada por dominios NIST CSF: Identificar, Proteger, Detectar y Recuperar
-- **Panel de detalle** por control: objetivo, evidencia, hallazgo potencial, plan de remediación y madurez
-- **Filtros dinámicos** por dominio, prioridad, impacto e implicancia legal
-- **Dashboard de métricas**: total de controles, impacto crítico, prioridad crítica, madurez promedio y dominios cubiertos
-- **Indicador de madurez visual** (escala 1–5) por cada control
-- Diseño oscuro responsivo con tipografía técnica (JetBrains Mono + Syne)
-- Datos en JSON externo — fácilmente extensible sin tocar el código
+- Matriz de 8 controles en 4 dominios NIST: Identificar, Proteger, Detectar, Recuperar
+- Scoring de riesgo: inherente (impacto × probabilidad) y residual (ajustado por madurez)
+- Estado del control por cada ítem: No implementado / Parcial / Implementado / Validado
+- Filtros por dominio, prioridad, impacto, estado y compliance
+- Panel de detalle con análisis legal, evidencia mínima, observación de auditor y plan de remediación
+- Vista tipo cards en mobile, tabla en desktop
+- Datos en JSON externo — extensible sin tocar el código
+
+---
+
+## Qué NO hace (honestidad sobre el alcance)
+
+- No persiste datos (sin backend, sin base de datos)
+- No permite editar controles desde la interfaz
+- No genera reportes exportables
+- No tiene autenticación ni multiusuario
+- No es una herramienta de auditoría certificada
+
+Estas limitaciones son intencionales para mantener el stack simple. Ver roadmap.
 
 ---
 
 ## Stack técnico
 
-| Capa | Tecnología |
-|------|-----------|
-| Estructura | HTML5 semántico |
-| Estilos | CSS3 puro (variables, grid, animaciones) |
-| Lógica | JavaScript vanilla (ES6+) |
-| Datos | JSON externo (`data/audit_matrix.json`) |
-| Fuentes | Google Fonts (JetBrains Mono, Syne) |
-| Deploy | GitHub Pages |
+HTML5 · CSS3 puro · JavaScript vanilla (ES6+) · JSON externo · GitHub Pages
 
-Sin frameworks, sin dependencias. Cero build tools.
+Sin frameworks. Sin dependencias. Sin build tools.
 
 ---
 
-## Estructura del proyecto
+## Estructura
 
 ```
 cyber-audit-mini-lab/
-├── index.html              # Estructura principal
-├── styles.css              # Estilos y sistema de diseño
-├── script.js               # Lógica de filtros, renderizado y detalle
+├── index.html              # Estructura y layout
+├── styles.css              # Sistema de diseño completo
+├── script.js               # Lógica, filtros, scoring, renderizado
 └── data/
-    └── audit_matrix.json   # Matriz de controles (fuente de datos)
+    └── audit_matrix.json   # Fuente de datos de controles
 ```
 
 ---
 
-## Cómo ejecutarlo localmente
+## Cómo ejecutarlo
 
 ```bash
-# Opción 1 — Python
+# Python
 python -m http.server 8080
 
-# Opción 2 — Node
+# Node
 npx serve .
 
-# Opción 3 — VS Code
-# Instalar extensión "Live Server" → clic derecho en index.html → Open with Live Server
+# VS Code → extensión Live Server → clic derecho en index.html
 ```
 
-> Requiere servidor local por la carga del JSON vía `fetch()`. No funciona abriendo el archivo directamente en el navegador.
+Requiere servidor local (usa `fetch()` para cargar el JSON).
 
 ---
 
-## Controles incluidos (v1.0)
+## Roadmap
 
-| # | Dominio | Riesgo |
-|---|---------|--------|
-| 01 | Identificar | Shadow IT / IA no autorizada |
-| 02 | Proteger | Robo de credenciales / MFA |
-| 03 | Proteger | Vulnerabilidades en software desactualizado |
-| 04 | Proteger | Ingeniería social y phishing con IA |
-| 05 | Recuperar | Ransomware / continuidad del negocio |
-| 06 | Identificar | Riesgo en cadena de proveedores |
-| 07 | Detectar | Ausencia de monitoreo continuo (SIEM) |
-| 08 | Detectar | Identidades comprometidas sin UEBA |
+Lo que viene en versiones futuras:
+
+- [ ] Scoring de riesgo más avanzado con ponderación por sector
+- [ ] Edición inline de observaciones y estado del control
+- [ ] Exportación de reporte en PDF
+- [ ] Trazabilidad de auditoría (historial de cambios)
+- [ ] Soporte para múltiples marcos: ISO 27001, CIS Controls
+- [ ] Evolución hacia herramienta colaborativa con backend mínimo
 
 ---
 
 ## Contexto profesional
 
-Este proyecto es parte de mi transición hacia roles en **Legal-Tech, GRC y Fraude Bancario Digital**. Combina:
+Construido por **Matías Godoy**, abogado trabajando en la intersección de fraude bancario digital, compliance y ciberseguridad aplicada al derecho. Este lab es parte de un portfolio técnico orientado a roles en Legal-Tech y GRC.
 
-- Conocimiento jurídico aplicado a marcos regulatorios (BCRA, compliance sectorial)
-- Pensamiento de auditoría y control interno
-- Capacidad técnica para construir herramientas funcionales desde cero
-
----
-
-## Autor
-
-**Matías Godoy** · [@mgodoylegal-tech](https://github.com/mgodoylegal-tech)
-Legal-Tech · GRC · Ciberseguridad aplicada al derecho
-
----
-
-*Proyecto en desarrollo activo — nuevos dominios y controles se agregan iterativamente.*
+[@mgodoylegal-tech](https://github.com/mgodoylegal-tech)

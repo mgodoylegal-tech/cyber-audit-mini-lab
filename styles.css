@@ -18,6 +18,9 @@
   --alto-bg:       rgba(251,191,36,0.1);
   --alto-border:   rgba(251,191,36,0.3);
   --verde-color:   #34d399;
+  --medio-color:   #a78bfa;
+  --medio-bg:      rgba(167,139,250,0.1);
+  --medio-border:  rgba(167,139,250,0.3);
   --font-display:  'Syne', sans-serif;
   --font-mono:     'JetBrains Mono', monospace;
   --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
@@ -83,6 +86,42 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: var(
 .dot { width:8px; height:8px; border-radius:50%; background:var(--border); }
 .dot.active { background:var(--accent); }
 .badge-compliance { font-size:10px; color:var(--text-muted); background:var(--bg-base); border:1px solid var(--border); padding:2px 8px; border-radius:4px; white-space:nowrap; }
+
+/* ── Estado del control ── */
+.badge-estado { display:inline-block; padding:3px 9px; border-radius:4px; font-size:10px; font-weight:600; border:1px solid; white-space:nowrap; }
+.badge-estado-noimpl  { background:rgba(248,113,113,0.12); color:#f87171; border-color:rgba(248,113,113,0.35); }
+.badge-estado-parcial { background:rgba(251,191,36,0.1);   color:#fbbf24; border-color:rgba(251,191,36,0.3); }
+.badge-estado-impl    { background:rgba(52,211,153,0.1);   color:#34d399; border-color:rgba(52,211,153,0.3); }
+.badge-estado-validado{ background:rgba(61,126,255,0.1);   color:#3d7eff; border-color:rgba(61,126,255,0.3); }
+
+/* ── Scoring de riesgo ── */
+.td-riesgo-num { white-space:nowrap; }
+.riesgo-num { font-weight:700; font-size:12px; padding:2px 6px; border-radius:3px; }
+.riesgo-critico { color:#f87171; background:rgba(248,113,113,0.1); }
+.riesgo-alto    { color:#fbbf24; background:rgba(251,191,36,0.08); }
+.riesgo-medio   { color:#a78bfa; background:rgba(167,139,250,0.1); }
+.riesgo-bajo    { color:#34d399; background:rgba(52,211,153,0.08); }
+.riesgo-arrow   { color:var(--text-muted); font-size:10px; margin:0 3px; }
+
+/* ── Card stat extra ── */
+.stat-card.card-danger { border-color:rgba(248,113,113,0.5); background:linear-gradient(135deg,var(--bg-card),rgba(248,113,113,0.06)); }
+.stat-card.card-danger .stat-value { color:#f87171; }
+
+/* ── Panel legal ── */
+.detail-legal-block { background:linear-gradient(135deg,rgba(61,126,255,0.06),rgba(61,126,255,0.02)); border-left:2px solid var(--accent) !important; }
+.detail-legal-block h4 { color:var(--accent) !important; }
+
+/* ── Cards mobile ── */
+.audit-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:10px; cursor:pointer; transition:border-color 0.15s; }
+.audit-card:hover { border-color:var(--border-light); }
+.audit-card.selected { border-color:var(--accent); background:var(--bg-selected); }
+.audit-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.audit-card-riesgo { font-size:13px; color:var(--text-primary); line-height:1.4; margin-bottom:10px; }
+.audit-card-badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.audit-card-footer { display:flex; justify-content:space-between; align-items:center; }
+.card-riesgo-label { font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:4px; }
+.btn-ver-detalle { background:var(--accent-dim); color:var(--accent); border:1px solid rgba(61,126,255,0.3); padding:6px 14px; border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:11px; cursor:pointer; font-weight:600; }
+.btn-ver-detalle:hover { background:rgba(61,126,255,0.2); }
 .empty-state { padding:40px; text-align:center; color:var(--text-muted); font-size:12px; }
 .detail-panel { background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
 .detail-panel.has-content { border-color:var(--border-light); }

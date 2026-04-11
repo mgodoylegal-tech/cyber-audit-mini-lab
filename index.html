@@ -13,9 +13,9 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <span class="brand-tag">[ LAB ]</span>
+        <span class="brand-tag">[ LAB · v1.1 ]</span>
         <h1>Cyber Audit<br><em>Mini Lab</em></h1>
-        <p class="brand-desc">Matriz de auditoría operativa en ciberseguridad · Riesgo · Control · Compliance</p>
+        <p class="brand-desc">Prototipo de matriz de auditoría de ciberseguridad con enfoque en riesgo operativo, controles, evidencia mínima y compliance</p>
       </div>
       <div class="header-meta">
         <div class="meta-item">
@@ -27,14 +27,15 @@
           <span class="meta-value">GRC · Legal-Tech</span>
         </div>
         <div class="meta-item">
-          <span class="meta-label">Estado</span>
-          <span class="meta-value status-dot">Auditoría preliminar</span>
+          <span class="meta-label">Versión</span>
+          <span class="meta-value status-dot">Prototipo v1.1</span>
         </div>
       </div>
     </div>
   </header>
   <main class="container">
     <section class="summary" id="summary"></section>
+
     <section class="filters-bar">
       <div class="filters-label">Filtrar por</div>
       <div class="filters-group">
@@ -51,6 +52,13 @@
           <option value="Crítico">Crítico</option>
           <option value="Alto">Alto</option>
         </select>
+        <select id="filterEstado" class="filter-select">
+          <option value="">Todo estado</option>
+          <option value="No implementado">No implementado</option>
+          <option value="Parcial">Parcial</option>
+          <option value="Implementado">Implementado</option>
+          <option value="Validado">Validado</option>
+        </select>
         <select id="filterCompliance" class="filter-select">
           <option value="">Toda implicancia</option>
           <option value="Debida diligencia documentable">Debida diligencia</option>
@@ -62,39 +70,50 @@
       </div>
       <div class="filter-count" id="filterCount"></div>
     </section>
-    <section class="table-wrapper">
-      <table class="audit-table" id="auditTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Dominio</th>
-            <th>Riesgo</th>
-            <th>Impacto</th>
-            <th>Prioridad</th>
-            <th>Responsable</th>
-            <th>Madurez</th>
-            <th>Compliance</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-      <div id="emptyState" class="empty-state" style="display:none">Sin resultados para los filtros aplicados.</div>
+
+    <!-- TABLA: visible en desktop -->
+    <section id="tableSection">
+      <div class="table-wrapper">
+        <table class="audit-table" id="auditTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Dominio</th>
+              <th>Riesgo</th>
+              <th>Impacto</th>
+              <th>Prioridad</th>
+              <th>Estado</th>
+              <th>Riesgo I→R</th>
+              <th>Madurez</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty-state" style="display:none">Sin resultados para los filtros aplicados.</div>
+      </div>
     </section>
+
+    <!-- CARDS: visible en mobile -->
+    <section id="cardsSection" style="display:none">
+      <div id="cardsContainer"></div>
+    </section>
+
     <section class="detail-panel" id="detailPanel">
       <div class="detail-header">
         <span class="detail-tag">DETALLE DEL CONTROL</span>
-        <span class="detail-hint" id="detailHint">Seleccioná una fila para ver el análisis completo</span>
+        <span class="detail-hint" id="detailHint">Seleccioná un control para ver el análisis completo</span>
       </div>
       <div id="detailContent" class="detail-empty">
         <div class="detail-placeholder">
           <span>↑</span>
-          <p>Clic en cualquier fila de la tabla</p>
+          <p>Clic en cualquier fila o "Ver detalle"</p>
         </div>
       </div>
     </section>
   </main>
+
   <footer class="footer">
-    <span>Cyber Audit Mini Lab · Portfolio profesional — <a href="https://github.com/mgodoylegal-tech" target="_blank">mgodoylegal-tech</a></span>
+    <span>Cyber Audit Mini Lab · Prototipo de portfolio — <a href="https://github.com/mgodoylegal-tech" target="_blank">mgodoylegal-tech</a></span>
     <span>GRC · Legal-Tech · Fraude Bancario Digital</span>
   </footer>
   <script src="script.js"></script>
