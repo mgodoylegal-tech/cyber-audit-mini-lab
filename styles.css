@@ -407,6 +407,30 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: var(
 .card-owner-label   { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
 .card-deadline-label { white-space: nowrap; }
 
+/* ── Criterio de evaluación ── */
+.criterio-evaluacion-block {
+  margin-top: 10px;
+  background: rgba(61,126,255,0.04);
+  border: 1px solid rgba(61,126,255,0.18);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.criterio-evaluacion-block p { font-size: 11px; color: var(--text-secondary); margin: 0; }
+.ev-criterio { color: var(--accent) !important; }
+
+/* ── Observación del auditor ── */
+.detail-observacion-block {
+  background: linear-gradient(135deg, rgba(167,139,250,0.06), rgba(167,139,250,0.02));
+  border-left: 2px solid rgba(167,139,250,0.6) !important;
+}
+.detail-observacion-block h4 { color: #a78bfa !important; }
+.observacion-texto {
+  font-size: 12px !important;
+  color: var(--text-primary) !important;
+  line-height: 1.55;
+  font-style: italic;
+}
+
 /* ── Responsive v1.3 ── */
 @media(max-width:768px){
   .td-estado-hallazgo { flex-direction: row; flex-wrap: wrap; gap: 4px; }

@@ -219,7 +219,7 @@ function buildFilters() {
 }
 
 function bindFilters() {
-  ['filterDominio','filterPrioridad','filterImpacto','filterCompliance','filterEstado','filterHallazgo','filterAging']
+  ['filterDominio','filterPrioridad','filterImpacto','filterCompliance','filterEstado','filterHallazgo','filterAging','filterDecision']
     .forEach(id => document.getElementById(id)?.addEventListener('change', applyFilters));
   document.getElementById('btnReset').addEventListener('click', resetFilters);
 }
@@ -232,6 +232,7 @@ function applyFilters() {
   const estado   = document.getElementById('filterEstado').value;
   const hallazgo = document.getElementById('filterHallazgo')?.value  || '';
   const aging    = document.getElementById('filterAging')?.value     || '';
+  const decision = document.getElementById('filterDecision')?.value  || '';
 
   filteredData = fullData.filter(d =>
     (!dom      || d.dominio === dom) &&
@@ -240,7 +241,8 @@ function applyFilters() {
     (!comp     || d.implicancia_compliance === comp) &&
     (!estado   || d.estado_control === estado) &&
     (!hallazgo || d.estado_hallazgo === hallazgo) &&
-    (!aging    || d.agingStatus === aging)
+    (!aging    || d.agingStatus === aging) &&
+    (!decision || d.decision_riesgo === decision)
   );
   selectedId = null;
   if (sortField) applySort();
@@ -251,7 +253,7 @@ function applyFilters() {
 }
 
 function resetFilters() {
-  ['filterDominio','filterPrioridad','filterImpacto','filterCompliance','filterEstado','filterHallazgo','filterAging']
+  ['filterDominio','filterPrioridad','filterImpacto','filterCompliance','filterEstado','filterHallazgo','filterAging','filterDecision']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   filteredData = [...fullData];
   sortField = null; sortDir = -1;
@@ -546,7 +548,22 @@ function renderDetail(item) {
         <span class="ev-label ev-observada">Evidencia observada en campo</span>
         <p>${item.evidencia_observada ?? '—'}</p>
       </div>
+      ${item.criterio_evaluacion ? `
+      <div class="criterio-evaluacion-block">
+        <span class="ev-label ev-criterio">Criterio de evaluación</span>
+        <p>${item.criterio_evaluacion}</p>
+      </div>` : ''}
     </div>
+
+    <!-- 4b. OBSERVACIÓN DEL AUDITOR -->
+    ${item.observacion_auditor ? `
+    <div class="detail-cell span-full detail-observacion-block">
+      <h4>🔍 Observación del auditor</h4>
+      <p class="observacion-texto">${item.observacion_auditor}</p>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-muted)">
+        Última revisión: ${item.ultima_revision ?? '—'} · Responsable técnico: ${item.responsable ?? '—'}
+      </div>
+    </div>` : ''}
 
     <!-- 5. IMPACTO TRIPLE -->
     <div class="detail-cell span-full">
