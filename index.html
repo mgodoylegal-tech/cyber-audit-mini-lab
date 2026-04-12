@@ -13,9 +13,9 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <span class="brand-tag">[ LAB · v1.2 ]</span>
+        <span class="brand-tag">[ LAB · v1.3 ]</span>
         <h1>Cyber Audit<br><em>Mini Lab</em></h1>
-        <p class="brand-desc">Prototipo de herramienta de auditoría operativa · 11 controles en los 5 dominios NIST CSF · Identificar → Proteger → Detectar → Responder → Recuperar</p>
+        <p class="brand-desc">Herramienta de gestión de hallazgos · 11 controles en los 5 dominios NIST CSF · Identificar → Proteger → Detectar → Responder → Recuperar</p>
       </div>
       <div class="header-meta">
         <div class="meta-item">
@@ -28,7 +28,7 @@
         </div>
         <div class="meta-item">
           <span class="meta-label">Versión</span>
-          <span class="meta-value status-dot">Prototipo v1.2</span>
+          <span class="meta-value status-dot">Prototipo v1.3</span>
         </div>
       </div>
     </div>
@@ -69,6 +69,12 @@
           <option value="Aceptado">Aceptado</option>
           <option value="Cerrado">Cerrado</option>
         </select>
+        <select id="filterAging" class="filter-select">
+          <option value="">Todo deadline</option>
+          <option value="vencido">⚠ Vencido</option>
+          <option value="proximo">Próximo (≤7d)</option>
+          <option value="en-termino">En término</option>
+        </select>
         <select id="filterCompliance" class="filter-select">
           <option value="">Toda implicancia</option>
           <option value="Debida diligencia documentable">Debida diligencia</option>
@@ -90,11 +96,11 @@
               <th>#</th>
               <th>Dominio</th>
               <th>Riesgo identificado</th>
-              <th class="sortable" data-sort="impacto" onclick="sortBy('impacto')">Impacto</th>
-              <th>Estado control</th>
-              <th class="sortable" data-sort="estado_hallazgo" onclick="sortBy('estado_hallazgo')">Hallazgo</th>
-              <th class="sortable" data-sort="riesgo_inherente" onclick="sortBy('riesgo_inherente')">Riesgo I→R ↕</th>
-              <th>Efectividad D·O</th>
+              <th>Estado / Hallazgo</th>
+              <th class="sortable" data-sort="riesgo_residual" onclick="sortBy('riesgo_residual')">Riesgo R ↕</th>
+              <th>Owner</th>
+              <th class="sortable" data-sort="diasHastaCompromiso" onclick="sortBy('diasHastaCompromiso')">Deadline ↕</th>
+              <th class="sortable" data-sort="diasHastaCompromiso" onclick="sortBy('diasHastaCompromiso')">Aging</th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>
