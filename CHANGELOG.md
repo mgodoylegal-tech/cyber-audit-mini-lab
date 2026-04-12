@@ -1,5 +1,82 @@
 # CHANGELOG — Cyber Audit Mini Lab
 
+## [v1.4] — 2026-04-12
+
+### Cierre de brechas metodológicas · Coherencia interna · Credibilidad profesional
+
+#### Datos (audit_matrix.json)
+- Nuevo campo `fecha_apertura_hallazgo`: fecha de detección del hallazgo (inicio del lifecycle)
+- Nuevo campo `fecha_cierre_hallazgo`: fecha de cierre formal (null si el hallazgo sigue abierto)
+- Nuevo campo `motivo_cierre`: descripción del cierre (null si sigue abierto)
+- Nuevo campo `aprobador_riesgo`: nombre del aprobador formal cuando `decision_riesgo = Aceptado`
+  - C06: "Director de Compras" (único control con riesgo aceptado formalmente)
+  - Todos los demás: null (señal de alerta visual si son Aceptados)
+- Nuevo campo `explicacion_riesgo_residual`: justificación técnica del valor residual calculado
+- Todos los 11 controles actualizados con los nuevos campos
+
+#### script.js
+- **Penalizaciones de gestión en el scoring de riesgo residual**:
+  - Principio: el riesgo no solo depende de la efectividad del control, sino de la calidad de su gestión
+  - Deadline vencido → +15% sobre el residual base
+  - Sin owner asignado → +10%
+  - Hallazgo en estado Abierto (no iniciado) → +5%
+  - El resultado está limitado al riesgo inherente (techo natural — nunca puede superarlo)
+  - Nuevo campo `penalizacion_gestion` en el objeto enriquecido (null si no aplica)
+- **Risk flags de alerta compuestos** (combinaciones de condiciones):
+  - `critico-vencido`: riesgo inherente ≥ 12 + deadline vencido
+  - `sin-owner`: owner_remediacion = null
+  - `hallazgo-critico-abierto`: hallazgo Abierto + impacto Alto/Crítico
+  - `aceptado-sin-aprobador`: decision_riesgo = Aceptado + aprobador_riesgo = null
+  - Nuevo campo `riskFlags[]` en el objeto enriquecido
+- **Panel de detalle reordenado** por prioridad de decisión (no de información):
+  1. Encabezado: riesgo inherente → residual + penalización visible
+  2. Brecha detectada + resultado + confianza
+  3. Seguimiento del hallazgo (owner, deadline, decisión, lifecycle completo)
+  4. Evidencia requerida vs observada
+  5. Observación del auditor
+  6. Análisis de impacto
+  7. Riesgo legal / compliance
+  8. Plan de remediación + consecuencia
+- Nueva sección "Seguimiento del hallazgo" en el detalle:
+  - Owner (con alerta si null)
+  - Deadline + aging badge + nota contextual
+  - Decisión de riesgo + aprobador + justificación de aceptación
+  - Lifecycle: fecha apertura / verificación / cierre
+  - Explicación del riesgo residual
+- `flattenItem()` actualizado con los 5 nuevos campos del lifecycle
+- Nuevas funciones helper: `renderRiskFlags()`, `renderPenalizacionBadge()`
+- Badge de decisión `Mitigar` con clase CSS propia
+
+#### styles.css
+- `.risk-flag-*`: badges compactos para los 4 tipos de flags de riesgo
+- `.audit-card.critico-vencido`: borde rojo intenso + box-shadow para cards mobile
+- `.audit-table tbody tr.row-critico-vencido`: fondo rojo más marcado que `row-vencido`
+- `.badge-penalizacion`: badge naranja compacto visible en tabla y detalle
+- `.penalizacion-explicacion`: bloque en el encabezado del detalle con motivos detallados
+- `.detail-seguimiento-block`: nueva sección 3 del detalle (reemplaza sección 9)
+- `.lifecycle-row`: fila horizontal con fechas del ciclo de vida
+- `.lifecycle-label`: label tiny para los campos de lifecycle
+- `.aprobador-tag`: chip inline para el nombre del aprobador de riesgo
+- `.explicacion-residual-block`: bloque verde tenue con la justificación del residual
+- `.aging-note-vencido` / `.aging-note-proximo`: notas contextuales inline junto al badge
+- `.audit-card-flags`: contenedor de flags en cards mobile
+- `.detail-flags-row`: fila de flags en el encabezado del detalle
+
+#### index.html
+- Versión actualizada a v1.4 en header, meta y footer
+- Footer con link directo al repositorio
+
+#### README.md
+- Reescritura completa al nivel de portfolio profesional:
+  - Glosario operativo: Riesgo I/R, D·O, Aging, Owner vs Estado, Risk Flags, Penalizaciones
+  - Doble capa explicada: análisis (dashboard) vs gestión (operativo)
+  - Caso de uso real: auditoría fintech / banco regulado por BCRA
+  - Decisiones de diseño: por qué vanilla, por qué JSON, por qué sin backend, por qué penalizar
+  - Roadmap profesional: persistencia, reporting, multi-framework, edición inline, multiusuario
+  - Tabla del modelo de datos con todos los campos del lifecycle
+
+---
+
 ## [v1.3] — 2026-04-12
 
 ### Transformación: de matriz de auditoría a herramienta de gestión de hallazgos

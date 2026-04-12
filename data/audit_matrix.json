@@ -43,7 +43,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Aprobar política en Directorio, comunicar formalmente, implementar controles técnicos de bloqueo y monitoreo de tráfico.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2025-11-15",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "La política existe en borrador pero sin aprobación ni enforcement técnico. El diseño parcial reduce ligeramente el riesgo inherente; la ausencia de operación lo sostiene alto."
     },
     "impact_analysis": {
       "impacto_negocio": "Filtración de información de clientes y contratos confidenciales procesados fuera de la jurisdicción acordada",
@@ -95,7 +100,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Forzar enrolamiento de MFA para cuentas de C-Level y administradores en los próximos 15 días. Verificar cobertura al 100% con reporte automatizado.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2025-10-01",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "MFA activo en el 85% de usuarios base reduce el riesgo general. La brecha crítica son las cuentas privilegiadas sin MFA, que concentran el mayor potencial de daño."
     },
     "impact_analysis": {
       "impacto_negocio": "Acceso no autorizado a sistemas transaccionales y datos de clientes mediante credencial única comprometida",
@@ -147,7 +157,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Incluir sistemas legacy en el proceso de parcheo. Establecer plan de migración o aislamiento para sistemas que no puedan parcharse.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2025-12-01",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "El proceso de parcheo reduce vulnerabilidades en sistemas modernos (78% cobertura). Los 12 sistemas legacy sin cobertura con vulnerabilidades críticas sostienen el riesgo residual."
     },
     "impact_analysis": {
       "impacto_negocio": "Compromiso de sistemas con datos de clientes a través de vulnerabilidades con exploit público disponible",
@@ -199,7 +214,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Ejecutar simulacros trimestrales completos, añadir módulo de deepfakes y clonación de voz, y medir reducción de tasa de interacción.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2025-09-10",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "El diseño bien documentado aporta valor potencial, pero la ejecución al 25% lo neutraliza. Un programa ejecutado parcialmente no mitiga el riesgo; lo aplaza."
     },
     "impact_analysis": {
       "impacto_negocio": "Transferencias fraudulentas autorizadas por empleados engañados mediante suplantación de identidad con IA",
@@ -251,7 +271,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Implementar backups offline e inmutables, actualizar BCP, contratar proveedor de recuperación y ejecutar prueba de restauración en 60 días.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2025-08-20",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "Los backups conectados no proveen protección real ante ransomware. Sin DRP probado ni proveedor de recuperación, el riesgo residual refleja la incapacidad técnica de respuesta."
     },
     "impact_analysis": {
       "impacto_negocio": "Cese total de operaciones con imposibilidad de recuperación sin pago de rescate",
@@ -303,7 +328,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Desarrollar cláusula estándar de ciberseguridad, incluirla en renovaciones contractuales y ejecutar evaluación formal de los 18 proveedores críticos.",
       "decision_riesgo": "Aceptado",
-      "justificacion_aceptacion": "La Dirección ha evaluado el riesgo y considera que el costo de implementación supera el beneficio en el corto plazo. Decisión adoptada sin análisis cuantitativo documentado ni plan de mitigación alternativo. Riesgo aceptado hasta la renovación contractual masiva prevista para Q4 2026. NOTA AUDITOR: la aceptación carece de sustento técnico y no cumple con los criterios mínimos de gestión de riesgo documentada."
+      "justificacion_aceptacion": "La Dirección ha evaluado el riesgo y considera que el costo de implementación supera el beneficio en el corto plazo. Decisión adoptada sin análisis cuantitativo documentado ni plan de mitigación alternativo. Riesgo aceptado hasta la renovación contractual masiva prevista para Q4 2026. NOTA AUDITOR: la aceptación carece de sustento técnico y no cumple con los criterios mínimos de gestión de riesgo documentada.",
+      "fecha_apertura_hallazgo": "2025-07-05",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": "Director de Compras",
+      "explicacion_riesgo_residual": "Decisión de aceptación formal reduce el riesgo en términos de governance, pero no técnicamente. 16 de 18 proveedores críticos permanecen sin cláusula ni evaluación. Aceptación sin análisis cuantitativo."
     },
     "impact_analysis": {
       "impacto_negocio": "Compromiso de datos de clientes a través de un proveedor de confianza sin posibilidad de detección temprana",
@@ -355,7 +385,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Implementar solución SIEM con logging centralizado, definir casos de uso de detección prioritarios y establecer proceso de revisión de alertas.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2025-06-15",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "Control en estado 0: sin SIEM, sin alertas, sin proceso de revisión. El único incidente del año tardó 47 días en detectarse. El riesgo residual refleja capacidad de detección nula."
     },
     "impact_analysis": {
       "impacto_negocio": "Incidentes que evolucionan a crisis durante semanas sin ser detectados, amplificando el daño total",
@@ -407,7 +442,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Integrar capacidades UEBA al SIEM, definir baseline por rol de usuario y establecer proceso de investigación con el equipo legal.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2025-06-15",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "Sin herramienta UEBA ni baseline de comportamiento, lo anómalo es indistinguible de lo normal. La ausencia de owner formal agrava la exposición: sin responsable, no hay remediación posible."
     },
     "impact_analysis": {
       "impacto_negocio": "Exfiltración silenciosa de datos de clientes por insiders o cuentas comprometidas durante semanas",
@@ -459,7 +499,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Redactar IRP con participación del área legal, definir árbol de notificación y ejecutar simulacro tabletop en los próximos 60 días.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2025-05-10",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "Sin IRP documentado, cada incidente será respondido ad hoc. El único incidente registrado confirma: 11 días de respuesta interna y sin notificación al BCRA. El riesgo regulatorio es directo y cuantificable."
     },
     "impact_analysis": {
       "impacto_negocio": "Daño reputacional severo y pérdida de confianza de clientes por respuesta caótica y descoordinada",
@@ -511,7 +556,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Definir runbooks de contención por tipo de incidente, capacitar en preservación forense básica y contratar proveedor externo de forensics.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2025-05-10",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "Deadline vencido sin avance documentado. El último incidente destruyó evidencia forense irrecuperable. Penalización por vencimiento y hallazgo abierto: el riesgo ajustado alcanza el inherente."
     },
     "impact_analysis": {
       "impacto_negocio": "Imposibilidad de recuperar fondos defraudados o iniciar acciones legales por ausencia de evidencia válida",
@@ -563,7 +613,12 @@
       "fecha_verificacion": null,
       "plan_remediacion": "Establecer calendario trimestral de pruebas, designar responsable técnico y del BCP, documentar con acta formal y corregir hallazgos antes de la siguiente prueba.",
       "decision_riesgo": "Remediar",
-      "justificacion_aceptacion": null
+      "justificacion_aceptacion": null,
+      "fecha_apertura_hallazgo": "2026-01-10",
+      "fecha_cierre_hallazgo": null,
+      "motivo_cierre": null,
+      "aprobador_riesgo": null,
+      "explicacion_riesgo_residual": "Sin prueba de restauración en 18 meses, la recuperabilidad es una suposición, no una garantía. Deadline próximo sin avance reportado. El riesgo residual refleja la incertidumbre total sobre la capacidad de recuperación."
     },
     "impact_analysis": {
       "impacto_negocio": "Pérdida irrecuperable de datos ante desastre real por fallo de backup no detectado previamente",

@@ -1,4 +1,4 @@
-// ─── Cyber Audit Mini Lab · v1.3 ───────────────────────────────────────────
+// ─── Cyber Audit Mini Lab · v1.4 ───────────────────────────────────────────
 // Stack: HTML + CSS + JS vanilla. Sin frameworks. Sin backend.
 // Autor: Matías Godoy · Legal-Tech / GRC / Ciberseguridad
 
@@ -28,7 +28,7 @@ async function init() {
 }
 
 // ─── APLANAR ESTRUCTURA NESTED → FLAT ────────────────────────────────────────
-// El JSON v1.3 tiene sub-objetos; este paso produce un objeto plano para
+// El JSON v1.4 tiene sub-objetos; este paso produce un objeto plano para
 // compatibilidad con todo el resto del código.
 function flattenItem(item) {
   const def    = item.control_definition     || {};
@@ -69,13 +69,18 @@ function flattenItem(item) {
     ultima_revision:       assess.ultima_revision,
     observacion_auditor:   assess.observacion_auditor,
     // remediation_tracking
-    estado_hallazgo:       rem.estado_hallazgo,
-    owner_remediacion:     rem.owner_remediacion,   // puede ser null (C08)
-    fecha_compromiso:      rem.fecha_compromiso,
-    fecha_verificacion:    rem.fecha_verificacion,
-    plan_remediacion:      rem.plan_remediacion,
-    decision_riesgo:       rem.decision_riesgo,
-    justificacion_aceptacion: rem.justificacion_aceptacion,
+    estado_hallazgo:           rem.estado_hallazgo,
+    owner_remediacion:         rem.owner_remediacion,   // puede ser null (C08)
+    fecha_compromiso:          rem.fecha_compromiso,
+    fecha_verificacion:        rem.fecha_verificacion,
+    plan_remediacion:          rem.plan_remediacion,
+    decision_riesgo:           rem.decision_riesgo,
+    justificacion_aceptacion:  rem.justificacion_aceptacion,
+    fecha_apertura_hallazgo:   rem.fecha_apertura_hallazgo,
+    fecha_cierre_hallazgo:     rem.fecha_cierre_hallazgo,
+    motivo_cierre:             rem.motivo_cierre,
+    aprobador_riesgo:          rem.aprobador_riesgo,
+    explicacion_riesgo_residual: rem.explicacion_riesgo_residual,
     // impact_analysis
     impacto_negocio:       impact.impacto_negocio,
     impacto_operativo:     impact.impacto_operativo,
@@ -84,44 +89,80 @@ function flattenItem(item) {
 }
 
 // ─── ENRIQUECER DATOS DE RIESGO ──────────────────────────────────────────────
-// v1.3: scoring ponderado por naturaleza_control + cálculo de aging de hallazgo
+// v1.4: scoring ponderado + penalizaciones de gestión + flags de riesgo
+//
+// El riesgo residual no solo depende de la efectividad del control,
+// sino de la calidad de su gestión. Un hallazgo sin owner, vencido,
+// o abierto sin iniciar → el riesgo real es mayor que el teórico.
 function enrichRiskData(item) {
-  const impNum     = IMPACTO_NUM[item.impacto] || 3;
-  const prob       = item.probabilidad || 3;
-  const inherente  = impNum * prob;
+  const impNum    = IMPACTO_NUM[item.impacto] || 3;
+  const prob      = item.probabilidad || 3;
+  const inherente = impNum * prob;
 
-  const diseno     = item.diseno_control   || 1;
-  const operacion  = item.operacion_control || 1;
+  const diseno    = item.diseno_control    || 1;
+  const operacion = item.operacion_control || 1;
 
   // Pesos según naturaleza del control
   // Automatizado: la operación pesa más (difícil de diseñar, fácil de operar)
-  // Manual:       el diseño pesa más (un buen procedimiento es el activo principal)
+  // Manual:       el diseño pesa más (el procedimiento es el activo principal)
   // Híbrido:      pesos iguales
   let wD, wO;
   if      (item.naturaleza_control === 'Automatizado') { wD = 0.35; wO = 0.65; }
   else if (item.naturaleza_control === 'Manual')       { wD = 0.65; wO = 0.35; }
-  else                                                  { wD = 0.50; wO = 0.50; } // Híbrido
+  else                                                  { wD = 0.50; wO = 0.50; }
 
   const efectividad = +(diseno * wD + operacion * wO).toFixed(2);
   const factor      = efectividad / 5 * 0.7;
-  const residual    = Math.round(inherente * (1 - factor));
+  let   residual    = Math.round(inherente * (1 - factor));
 
   // Aging del hallazgo
   const aging = calcAging(item.fecha_compromiso);
 
+  // ── Penalizaciones de gestión (v1.4) ──────────────────────────────────────
+  // Principio: un hallazgo mal gestionado tiene más riesgo real que el
+  // calculado por la efectividad del control. Los factores son deliberadamente
+  // simples y explicables (no fórmulas opacas).
+  //
+  //   +15% deadline vencido     → remediación demorada amplifica la exposición
+  //   +10% sin owner asignado   → sin responsable, no hay remediación posible
+  //   +5%  hallazgo Abierto     → aún no se inició ninguna acción correctiva
+  //
+  // El resultado no puede superar el riesgo inherente (techo natural).
+  let penalizacion = 0;
+  if (aging.status === 'vencido')          penalizacion += 0.15;
+  if (!item.owner_remediacion)             penalizacion += 0.10;
+  if (item.estado_hallazgo === 'Abierto')  penalizacion += 0.05;
+
+  if (penalizacion > 0) {
+    residual = Math.min(inherente, Math.round(residual * (1 + penalizacion)));
+  }
+
+  // ── Flags de riesgo (v1.4) ───────────────────────────────────────────────
+  // Señales de alerta que superan el scoring individual.
+  // Combinar condiciones revela situaciones que requieren atención inmediata.
+  const riskFlags = [];
+  if (inherente >= 12 && aging.status === 'vencido')
+    riskFlags.push('critico-vencido');
+  if (!item.owner_remediacion)
+    riskFlags.push('sin-owner');
+  if (item.estado_hallazgo === 'Abierto' && IMPACTO_NUM[item.impacto] >= 4)
+    riskFlags.push('hallazgo-critico-abierto');
+  if (item.decision_riesgo === 'Aceptado' && !item.aprobador_riesgo)
+    riskFlags.push('aceptado-sin-aprobador');
+
   return {
     ...item,
-    efectividad_control:  efectividad,
-    riesgo_inherente:     inherente,
-    riesgo_residual:      residual,
-    diasHastaCompromiso:  aging.dias,
-    agingStatus:          aging.status
+    efectividad_control: efectividad,
+    riesgo_inherente:    inherente,
+    riesgo_residual:     residual,
+    penalizacion_gestion: penalizacion > 0 ? penalizacion : null,
+    riskFlags,
+    diasHastaCompromiso: aging.dias,
+    agingStatus:         aging.status
   };
 }
 
 // ─── CÁLCULO DE AGING ─────────────────────────────────────────────────────────
-// Devuelve días hasta (positivo) o desde (negativo) la fecha de compromiso
-// y el estado: 'vencido' | 'proximo' (≤7d) | 'en-termino' | 'sin-fecha'
 function calcAging(fechaCompromiso) {
   if (!fechaCompromiso) return { dias: null, status: 'sin-fecha' };
   const today    = new Date();
@@ -199,6 +240,33 @@ function renderAgingBadge(item) {
     return `<span class="badge-aging badge-aging-proximo">${dias}d</span>`;
   }
   return `<span class="badge-aging badge-aging-termino">${dias}d</span>`;
+}
+
+// ─── HELPER: RISK FLAGS BADGES ───────────────────────────────────────────────
+// Señales de alerta compuestas — más allá del scoring individual.
+function renderRiskFlags(item) {
+  if (!item.riskFlags || !item.riskFlags.length) return '';
+  return item.riskFlags.map(flag => {
+    switch (flag) {
+      case 'critico-vencido':
+        return '<span class="risk-flag risk-flag-critico-vencido" title="Riesgo alto + deadline vencido">⚡ Crítico vencido</span>';
+      case 'sin-owner':
+        return '<span class="risk-flag risk-flag-sin-owner" title="Sin responsable formal asignado">◎ Sin owner</span>';
+      case 'hallazgo-critico-abierto':
+        return '<span class="risk-flag risk-flag-hallazgo-critico" title="Hallazgo crítico sin iniciar">▲ Abierto crítico</span>';
+      case 'aceptado-sin-aprobador':
+        return '<span class="risk-flag risk-flag-aceptado-sin-aprobador" title="Riesgo aceptado sin aprobador formal">⚠ Aceptado sin aprobador</span>';
+      default:
+        return '';
+    }
+  }).join('');
+}
+
+// ─── HELPER: PENALIZACIÓN BADGE ──────────────────────────────────────────────
+function renderPenalizacionBadge(item) {
+  if (!item.penalizacion_gestion) return '';
+  const pct = Math.round(item.penalizacion_gestion * 100);
+  return `<span class="badge-penalizacion" title="Penalización por gestión deficiente: +${pct}%">+${pct}% gestión</span>`;
 }
 
 // ─── HELPER: FORMATO DE FECHA ─────────────────────────────────────────────────
@@ -280,7 +348,6 @@ function sortBy(field) {
 function applySort() {
   filteredData = [...filteredData].sort((a, b) => {
     const va = a[sortField], vb = b[sortField];
-    // null va al fondo en cualquier dirección
     if (va == null && vb == null) return 0;
     if (va == null) return 1;
     if (vb == null) return -1;
@@ -301,6 +368,9 @@ function renderSummary(data) {
     ? (data.reduce((s, d) => s + d.efectividad_control, 0) / total).toFixed(2)
     : '—';
   const efPct    = total ? (avgEf / 5 * 100).toFixed(0) : 0;
+
+  // Contar flags críticos para el resumen
+  const flagCriticos = data.filter(d => d.riskFlags && d.riskFlags.length > 0).length;
 
   document.getElementById('summary').innerHTML = `
     <div class="stat-card">
@@ -337,7 +407,7 @@ function renderSummary(data) {
 }
 
 // ─── TABLA (DESKTOP) ─────────────────────────────────────────────────────────
-// v1.3: columnas de gestión → # | Dominio | Riesgo | Estado/Hallazgo | Riesgo R | Owner | Deadline | Aging
+// v1.4: flags de riesgo compuestos visibles en columna de riesgo
 function renderTable(data) {
   const tbody = document.getElementById('tableBody');
   const empty = document.getElementById('emptyState');
@@ -347,26 +417,35 @@ function renderTable(data) {
 
   data.forEach(item => {
     const tr = document.createElement('tr');
-    if (item.id === selectedId) tr.classList.add('selected');
-    if (item.agingStatus === 'vencido') tr.classList.add('row-vencido');
+    if (item.id === selectedId)                                  tr.classList.add('selected');
+    if (item.agingStatus === 'vencido')                          tr.classList.add('row-vencido');
+    if (item.riskFlags?.includes('critico-vencido'))             tr.classList.add('row-critico-vencido');
 
     const rr = riesgoNivel(item.riesgo_residual);
 
-    // Owner: null → alerta
+    // Owner: null → alerta naranja
     const ownerHtml = item.owner_remediacion
       ? `<span class="owner-text">${item.owner_remediacion}</span>`
       : `<span class="badge-owner-unset">⚠ Sin asignar</span>`;
 
+    // Risk flags compactos para la celda de riesgo
+    const flagsHtml = renderRiskFlags(item);
+    const penalHtml = renderPenalizacionBadge(item);
+
     tr.innerHTML = `
       <td class="td-id">${String(item.id).padStart(2, '0')}</td>
       <td><span class="badge-dominio badge-dominio-${item.dominio.toLowerCase()}">${item.dominio}</span></td>
-      <td class="td-riesgo">${item.riesgo}</td>
+      <td class="td-riesgo">
+        ${item.riesgo}
+        ${flagsHtml ? `<div class="td-flags">${flagsHtml}</div>` : ''}
+      </td>
       <td class="td-estado-hallazgo">
         <span class="badge-estado badge-estado-${estadoClass(item.estado_control)}">${item.estado_control}</span>
         <span class="badge-hallazgo badge-hallazgo-${hallazgoClass(item.estado_hallazgo)}">${item.estado_hallazgo}</span>
       </td>
       <td class="td-riesgo-r">
-        <span class="riesgo-num riesgo-${rr.cls}" title="${rr.label}">${item.riesgo_residual}</span>
+        <span class="riesgo-num riesgo-${rr.cls}" title="${rr.label}: inherente ${item.riesgo_inherente} → residual ${item.riesgo_residual}">${item.riesgo_residual}</span>
+        ${penalHtml}
       </td>
       <td class="td-owner">${ownerHtml}</td>
       <td class="td-deadline">${formatFecha(item.fecha_compromiso)}</td>
@@ -397,10 +476,13 @@ function renderCards(data) {
     card.className = 'audit-card';
     if (item.id === selectedId)         card.classList.add('selected');
     if (item.agingStatus === 'vencido') card.classList.add('vencido');
+    if (item.riskFlags?.includes('critico-vencido')) card.classList.add('critico-vencido');
 
     const ownerHtml = item.owner_remediacion
       ? item.owner_remediacion
       : '<span class="badge-owner-unset">⚠ Sin asignar</span>';
+
+    const flagsHtml = renderRiskFlags(item);
 
     card.innerHTML = `
       <div class="audit-card-header">
@@ -415,6 +497,7 @@ function renderCards(data) {
         <span class="badge-hallazgo badge-hallazgo-${hallazgoClass(item.estado_hallazgo)}">${item.estado_hallazgo}</span>
         ${renderAgingBadge(item)}
       </div>
+      ${flagsHtml ? `<div class="audit-card-flags">${flagsHtml}</div>` : ''}
       <div class="audit-card-footer">
         <span class="card-meta">
           <span class="card-owner-label">Owner: ${ownerHtml}</span>
@@ -436,6 +519,16 @@ function renderCards(data) {
 }
 
 // ─── DETALLE ─────────────────────────────────────────────────────────────────
+// v1.4: orden orientado a decisión (no a información)
+//
+// 1. Encabezado: riesgo inherente → residual · scoring · badges
+// 2. Brecha detectada · resultado · confianza
+// 3. Seguimiento del hallazgo (operativo: owner, deadline, decisión, lifecycle)
+// 4. Evidencia requerida vs observada + criterio de evaluación
+// 5. Observación del auditor
+// 6. Análisis de impacto (negocio · operativo · regulatorio)
+// 7. Riesgo legal / compliance
+// 8. Plan de remediación + contexto del control
 function renderDetail(item) {
   const panel = document.getElementById('detailPanel');
   const hint  = document.getElementById('detailHint');
@@ -447,45 +540,84 @@ function renderDetail(item) {
   hint.textContent = `Control #${String(item.id).padStart(2, '0')} · ${item.dominio} · ${item.tipo_control}`;
   cont.className = '';
 
-  const fVerif = item.fecha_verificacion
-    ? item.fecha_verificacion
-    : '<span style="color:var(--text-muted)">Sin fecha aún</span>';
-
   // Naturaleza del control + pesos aplicados
   let pesosLabel = '';
   if      (item.naturaleza_control === 'Automatizado') pesosLabel = 'D×0.35 + O×0.65';
   else if (item.naturaleza_control === 'Manual')       pesosLabel = 'D×0.65 + O×0.35';
   else                                                  pesosLabel = 'D×0.50 + O×0.50';
 
-  // Sección de gestión: owner + aging
+  // Penalización visible en el encabezado
+  let penalText = '';
+  if (item.penalizacion_gestion) {
+    const pct = Math.round(item.penalizacion_gestion * 100);
+    const motivos = [];
+    if (item.agingStatus === 'vencido')          motivos.push('deadline vencido (+15%)');
+    if (!item.owner_remediacion)                 motivos.push('sin owner (+10%)');
+    if (item.estado_hallazgo === 'Abierto')      motivos.push('hallazgo abierto (+5%)');
+    penalText = `<div class="penalizacion-explicacion">
+      <span class="badge-penalizacion">+${pct}% penalización de gestión</span>
+      <span class="penalizacion-motivos">${motivos.join(' · ')}</span>
+    </div>`;
+  }
+
+  // ── Sección 3: Seguimiento del hallazgo ───────────────────────────────────
   const ownerDisplay = item.owner_remediacion
     ? item.owner_remediacion
     : `<span class="badge-owner-unset">⚠ Sin responsable asignado — hallazgo sin ownership formal</span>`;
 
   const agingDisplay = renderAgingBadge(item);
   const agingNote = item.agingStatus === 'vencido'
-    ? `<span style="color:#f87171;font-size:11px">Deadline vencido hace ${Math.abs(item.diasHastaCompromiso)} día(s). Requiere escalamiento.</span>`
+    ? `<span class="aging-note aging-note-vencido">Deadline vencido hace ${Math.abs(item.diasHastaCompromiso)} día(s). Requiere escalamiento.</span>`
     : item.agingStatus === 'proximo'
-    ? `<span style="color:#fb923c;font-size:11px">Vence en ${item.diasHastaCompromiso} día(s). Confirmar avance.</span>`
+    ? `<span class="aging-note aging-note-proximo">Vence en ${item.diasHastaCompromiso} día(s). Confirmar avance.</span>`
     : '';
 
-  // Sección de decisión de riesgo
   const decisionHtml = (() => {
     const dec = item.decision_riesgo || 'Remediar';
-    const decClass = dec === 'Aceptado' ? 'aceptado' : dec === 'Transferir' ? 'transferir' : 'remediar';
+    const decClass = dec === 'Aceptado' ? 'aceptado' : dec === 'Transferir' ? 'transferir' : dec === 'Mitigar' ? 'mitigar' : 'remediar';
     let html = `<span class="badge-decision badge-decision-${decClass}">${dec}</span>`;
-    if (dec === 'Aceptado' && item.justificacion_aceptacion) {
-      html += `<div class="justificacion-aceptacion">
-        <span class="ev-label ev-alerta">⚠ Justificación de aceptación</span>
-        <p>${item.justificacion_aceptacion}</p>
-      </div>`;
+
+    if (dec === 'Aceptado') {
+      // Aprobador
+      html += item.aprobador_riesgo
+        ? `<span class="aprobador-tag">Aprobado por: ${item.aprobador_riesgo}</span>`
+        : `<span class="badge-owner-unset" style="margin-left:6px">⚠ Sin aprobador formal</span>`;
+      // Justificación
+      if (item.justificacion_aceptacion) {
+        html += `<div class="justificacion-aceptacion">
+          <span class="ev-label ev-alerta">⚠ Justificación de aceptación</span>
+          <p>${item.justificacion_aceptacion}</p>
+        </div>`;
+      }
     }
     return html;
   })();
 
+  // Lifecycle del hallazgo
+  const lifecycleHtml = `
+    <div class="lifecycle-row">
+      <span class="lifecycle-item"><span class="lifecycle-label">Apertura:</span> ${formatFecha(item.fecha_apertura_hallazgo)}</span>
+      <span class="lifecycle-item"><span class="lifecycle-label">Verificación:</span> ${item.fecha_verificacion ? formatFecha(item.fecha_verificacion) : '<span style="color:var(--text-muted)">Pendiente</span>'}</span>
+      <span class="lifecycle-item"><span class="lifecycle-label">Cierre:</span> ${item.fecha_cierre_hallazgo ? formatFecha(item.fecha_cierre_hallazgo) : '<span style="color:var(--text-muted)">Abierto</span>'}</span>
+      ${item.motivo_cierre ? `<span class="lifecycle-item"><span class="lifecycle-label">Motivo:</span> ${item.motivo_cierre}</span>` : ''}
+    </div>`;
+
+  // Risk flags en el detalle
+  const flagsDetailHtml = item.riskFlags?.length
+    ? `<div class="detail-flags-row">${renderRiskFlags(item)}</div>`
+    : '';
+
+  // Explicación del riesgo residual
+  const explicacionHtml = item.explicacion_riesgo_residual
+    ? `<div class="explicacion-residual-block">
+        <span class="ev-label ev-criterio">Por qué este residual</span>
+        <p>${item.explicacion_riesgo_residual}</p>
+      </div>`
+    : '';
+
   cont.innerHTML = `<div class="detail-grid">
 
-    <!-- 1. ENCABEZADO -->
+    <!-- 1. ENCABEZADO: RIESGO I → R -->
     <div class="detail-riesgo-header">
       <div class="detail-riesgo-title">${item.riesgo}</div>
       <div class="detail-scoring-row">
@@ -496,6 +628,8 @@ function renderDetail(item) {
         ${renderEfectividad(item.diseno_control, item.operacion_control, item.naturaleza_control)}
         <span class="pesos-label" title="Pesos por naturaleza: ${pesosLabel}">${pesosLabel} = ${item.efectividad_control}</span>
       </div>
+      ${penalText}
+      ${flagsDetailHtml}
       <div class="detail-badges">
         <span class="badge badge-${impactoClass(item.impacto)}">${item.impacto}</span>
         <span class="badge badge-prioridad-${item.prioridad === 'Crítica' ? 'critica' : 'alta'}">${item.prioridad}</span>
@@ -517,21 +651,31 @@ function renderDetail(item) {
       </div>
     </div>
 
-    <!-- 3. CONTEXTO -->
-    <div class="detail-cell">
-      <h4>Activo afectado</h4>
-      <p>${item.activo_afectado ?? '—'}</p>
-    </div>
-    <div class="detail-cell">
-      <h4>Tipo y naturaleza del control</h4>
-      <p>
-        <span class="badge-tipo badge-tipo-${item.tipo_control?.toLowerCase()}">${item.tipo_control}</span>&nbsp;
-        <span class="badge-naturaleza">${item.naturaleza_control}</span>
-      </p>
-      <p style="margin-top:8px">${item.objetivo_control}</p>
+    <!-- 3. SEGUIMIENTO DEL HALLAZGO (operativo — decisión) -->
+    <div class="detail-cell detail-seguimiento-block span-full">
+      <h4>📋 Seguimiento del hallazgo</h4>
+      <div class="seguimiento-grid">
+        <div class="gestion-row">
+          <span class="gestion-label">Owner:</span>
+          <span>${ownerDisplay}</span>
+        </div>
+        <div class="gestion-row">
+          <span class="gestion-label">Deadline:</span>
+          <span>${formatFecha(item.fecha_compromiso)} &nbsp;${agingDisplay} ${agingNote}</span>
+        </div>
+        <div class="gestion-row">
+          <span class="gestion-label">Decisión de riesgo:</span>
+          <span>${decisionHtml}</span>
+        </div>
+        <div class="gestion-row">
+          <span class="gestion-label">Ciclo de vida:</span>
+          <span>${lifecycleHtml}</span>
+        </div>
+      </div>
+      ${explicacionHtml}
     </div>
 
-    <!-- 4. EVIDENCIA -->
+    <!-- 4. EVIDENCIA REQUERIDA VS OBSERVADA -->
     <div class="detail-cell span-full">
       <h4>Evidencia requerida vs observada en campo</h4>
       <div class="evidencia-split">
@@ -555,7 +699,7 @@ function renderDetail(item) {
       </div>` : ''}
     </div>
 
-    <!-- 4b. OBSERVACIÓN DEL AUDITOR -->
+    <!-- 5. OBSERVACIÓN DEL AUDITOR -->
     ${item.observacion_auditor ? `
     <div class="detail-cell span-full detail-observacion-block">
       <h4>🔍 Observación del auditor</h4>
@@ -565,7 +709,7 @@ function renderDetail(item) {
       </div>
     </div>` : ''}
 
-    <!-- 5. IMPACTO TRIPLE -->
+    <!-- 6. ANÁLISIS DE IMPACTO -->
     <div class="detail-cell span-full">
       <h4>Análisis de impacto</h4>
       <div class="impacto-triple">
@@ -584,53 +728,30 @@ function renderDetail(item) {
       </div>
     </div>
 
-    <!-- 6. LEGAL / COMPLIANCE -->
+    <!-- 7. RIESGO LEGAL / COMPLIANCE -->
     <div class="detail-cell detail-legal-block span-full">
       <h4>⚖ Riesgo legal / Compliance</h4>
       <p>${item.riesgo_legal ?? '—'}</p>
-      <div style="margin-top:8px">
+      <div style="margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
         <span class="badge-compliance">${item.implicancia_compliance}</span>
+        <span style="font-size:11px;color:var(--text-muted)">Por qué importa: ${item.por_que_importa ?? '—'}</span>
       </div>
     </div>
 
-    <!-- 7. POR QUÉ IMPORTA + CONSECUENCIA -->
+    <!-- 8. PLAN DE REMEDIACIÓN + CONTEXTO -->
     <div class="detail-cell">
-      <h4>Por qué importa</h4>
-      <p>${item.por_que_importa ?? '—'}</p>
+      <h4>Plan de remediación</h4>
+      <p>${item.plan_remediacion ?? '—'}</p>
+      <p style="margin-top:10px;font-size:11px;color:var(--text-muted)">
+        Resp. técnico: ${item.responsable} · ${item.frecuencia}
+      </p>
     </div>
     <div class="detail-cell">
       <h4>Consecuencia potencial</h4>
       <p>${item.consecuencia_potencial ?? '—'}</p>
-    </div>
-
-    <!-- 8. PLAN DE REMEDIACIÓN -->
-    <div class="detail-cell">
-      <h4>Plan de remediación</h4>
-      <p>${item.plan_remediacion ?? '—'}</p>
-    </div>
-
-    <!-- 9. GESTIÓN DEL HALLAZGO (v1.3) -->
-    <div class="detail-cell detail-gestion-block">
-      <h4>📋 Gestión del hallazgo</h4>
-      <div class="gestion-row">
-        <span class="gestion-label">Owner:</span>
-        <span>${ownerDisplay}</span>
-      </div>
-      <div class="gestion-row">
-        <span class="gestion-label">Deadline:</span>
-        <span>${formatFecha(item.fecha_compromiso)} ${agingDisplay} ${agingNote}</span>
-      </div>
-      <div class="gestion-row">
-        <span class="gestion-label">Verificación:</span>
-        <span>${fVerif}</span>
-      </div>
-      <div class="gestion-row">
-        <span class="gestion-label">Decisión de riesgo:</span>
-        <span>${decisionHtml}</span>
-      </div>
-      <p style="margin-top:8px;color:var(--text-muted);font-size:11px">
-        Resp. técnico: ${item.responsable} · ${item.frecuencia}<br>
-        Última revisión: ${item.ultima_revision ?? '—'}
+      <p style="margin-top:10px">
+        <span class="ev-label" style="display:inline">Activo afectado</span>
+        <span style="font-size:11px;color:var(--text-secondary)"> ${item.activo_afectado ?? '—'}</span>
       </p>
     </div>
 
@@ -646,7 +767,7 @@ function clearDetail() {
   panel.classList.remove('has-content');
   hint.textContent = 'Seleccioná un control para ver el análisis completo';
   cont.className = 'detail-empty';
-  cont.innerHTML = '<div class="detail-placeholder"><span>↑</span><p>Clic en cualquier fila de la tabla</p></div>';
+  cont.innerHTML = '<div class="detail-placeholder"><span>↑</span><p>Clic en cualquier fila o "Ver detalle"</p></div>';
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────

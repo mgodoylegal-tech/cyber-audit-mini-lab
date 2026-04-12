@@ -431,9 +431,130 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: var(
   font-style: italic;
 }
 
-/* ── Responsive v1.3 ── */
+/* ═══════════════════════════════════════════════════════════
+   v1.4 — Lifecycle · Penalizaciones · Risk Flags · Seguimiento
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Risk flags: señales de alerta compuestas ── */
+.td-flags {
+  display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px;
+}
+.risk-flag {
+  display: inline-block; padding: 1px 6px; border-radius: 3px;
+  font-size: 9px; font-weight: 700; border: 1px solid; white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+.risk-flag-critico-vencido {
+  background: rgba(239,68,68,0.15); color: #ef4444;
+  border-color: rgba(239,68,68,0.5);
+  animation: pulse-red 1.8s ease-in-out infinite;
+}
+.risk-flag-sin-owner {
+  background: rgba(251,146,60,0.12); color: #fb923c;
+  border-color: rgba(251,146,60,0.45);
+}
+.risk-flag-hallazgo-critico {
+  background: rgba(248,113,113,0.1); color: #f87171;
+  border-color: rgba(248,113,113,0.4);
+}
+.risk-flag-aceptado-sin-aprobador {
+  background: rgba(167,139,250,0.12); color: #c084fc;
+  border-color: rgba(167,139,250,0.45);
+}
+
+/* ── Cards mobile: flags ── */
+.audit-card-flags {
+  display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.audit-card.critico-vencido {
+  border-color: rgba(239,68,68,0.7) !important;
+  box-shadow: 0 0 0 1px rgba(239,68,68,0.2), 0 0 8px rgba(239,68,68,0.08);
+}
+
+/* ── Fila tabla: crítico + vencido ── */
+.audit-table tbody tr.row-critico-vencido td {
+  background: rgba(239,68,68,0.06);
+}
+.audit-table tbody tr.row-critico-vencido:hover td {
+  background: rgba(239,68,68,0.1);
+}
+
+/* ── Penalización de gestión ── */
+.badge-penalizacion {
+  display: inline-block; padding: 1px 6px; border-radius: 3px;
+  font-size: 9px; font-weight: 700; white-space: nowrap;
+  background: rgba(251,146,60,0.1); color: #fb923c;
+  border: 1px solid rgba(251,146,60,0.35);
+  margin-top: 3px;
+}
+.penalizacion-explicacion {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-top: 6px;
+}
+.penalizacion-motivos {
+  font-size: 10px; color: var(--text-muted); font-style: italic;
+}
+
+/* ── Detail flags row (encabezado del detalle) ── */
+.detail-flags-row {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;
+}
+.detail-flags-row .risk-flag { font-size: 10px; padding: 2px 8px; }
+
+/* ── Bloque de seguimiento del hallazgo (nueva sección 3) ── */
+.detail-seguimiento-block {
+  background: linear-gradient(135deg, rgba(61,126,255,0.05), rgba(61,126,255,0.01));
+  border-left: 2px solid rgba(61,126,255,0.5) !important;
+}
+.detail-seguimiento-block h4 { color: #60a5fa !important; }
+.seguimiento-grid {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;
+}
+
+/* ── Aging notes inline ── */
+.aging-note {
+  display: inline-block; font-size: 11px; margin-left: 6px;
+}
+.aging-note-vencido { color: #f87171; }
+.aging-note-proximo { color: #fb923c; }
+
+/* ── Lifecycle del hallazgo ── */
+.lifecycle-row {
+  display: flex; gap: 16px; flex-wrap: wrap; font-size: 11px;
+  color: var(--text-secondary);
+}
+.lifecycle-item { display: flex; gap: 4px; align-items: center; }
+.lifecycle-label {
+  font-size: 9px; font-weight: 600; letter-spacing: 0.08em;
+  color: var(--text-muted); text-transform: uppercase;
+}
+
+/* ── Aprobador de riesgo ── */
+.aprobador-tag {
+  display: inline-block; margin-left: 8px;
+  font-size: 10px; color: var(--text-muted);
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 1px 7px; border-radius: 3px;
+}
+
+/* ── Explicación del riesgo residual ── */
+.explicacion-residual-block {
+  margin-top: 12px;
+  background: rgba(52,211,153,0.04);
+  border: 1px solid rgba(52,211,153,0.18);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.explicacion-residual-block p {
+  font-size: 11px; color: var(--text-secondary); margin: 0; line-height: 1.55;
+}
+
+/* ── Responsive v1.3/1.4 ── */
 @media(max-width:768px){
   .td-estado-hallazgo { flex-direction: row; flex-wrap: wrap; gap: 4px; }
   .gestion-label { min-width: 90px; }
   .justificacion-aceptacion p { font-size: 10px !important; }
+  .lifecycle-row { flex-direction: column; gap: 6px; }
+  .penalizacion-explicacion { flex-direction: column; gap: 4px; }
+  .detail-flags-row .risk-flag { font-size: 9px; }
 }

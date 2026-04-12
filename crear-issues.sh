@@ -1,97 +1,34 @@
 #!/bin/bash
-# Crear issues de roadmap para cyber-audit-mini-lab
-# Ejecutar desde la carpeta del proyecto con: bash crear-issues.sh
+# ─── Cyber Audit Mini Lab — Crear issues del roadmap en GitHub ───────────────
+# Requiere: gh CLI autenticado (gh auth login)
+# Uso: bash crear-issues.sh (desde la carpeta del proyecto)
 
-REPO="mgodoylegal-tech/cyber-audit-mini-lab"
+echo "Creando issues del roadmap de Cyber Audit Mini Lab v1.4..."
 
-gh issue create --repo $REPO \
-  --title "feat: edición inline de estado y owner desde la tabla" \
-  --body "## Descripción
-Permitir editar directamente desde la tabla sin abrir el panel de detalle:
-- \`estado_hallazgo\`: dropdown inline por fila
-- \`owner_remediacion\`: input inline por fila
-- \`fecha_compromiso\`: date picker inline
+gh issue create \
+  --title "feat: edicion inline de estado y owner del hallazgo" \
+  --label "enhancement" \
+  --body "Actualmente la herramienta es de solo lectura. Propuesta: doble clic en celda estado_hallazgo / owner_remediacion / fecha_compromiso para edicion inline. Validacion en tiempo real (owner no puede quedar vacio si hallazgo esta Abierto). Cambios reflejados en scoring y risk flags. Exportar JSON modificado (descarga local, sin backend). Criterio: usuario puede cambiar estado/owner/deadline desde la tabla y el scoring se recalcula automaticamente."
 
-## Criterio de aceptación
-- Cambios persisten en memoria (sin backend)
-- Badge actualiza en tiempo real al cambiar el estado
-- No rompe filtros ni ordenamiento activo
+gh issue create \
+  --title "feat: exportacion PDF del informe ejecutivo de auditoria" \
+  --label "enhancement" \
+  --body "No existe forma de generar un reporte exportable para el Directorio o regulador. Propuesta: boton Exportar informe en el header. PDF con portada, resumen ejecutivo (stat cards), top hallazgos criticos (riesgo residual >= 12), tabla completa y detalle de risk flags activos. Generacion 100% client-side con jsPDF (sin backend). Los hallazgos con penalizacion de gestion deben ser visibles en el reporte."
 
-## Por qué es prioritario
-Es el paso natural de 'ver hallazgos' a 'gestionar hallazgos'. Sin edición inline la herramienta es de solo lectura."
+gh issue create \
+  --title "feat: soporte multi-framework (ISO 27001 / COBIT 2019)" \
+  --label "enhancement" \
+  --body "El dataset actual esta disenado para NIST CSF. Propuesta: nuevo campo framework en control_definition (NIST CSF / ISO 27001 / COBIT 2019) y referencia_framework con el codigo del control (ej: PR.AC-1, A.9.2.1). Filtro filterFramework en la barra. El modelo de 4 sub-objetos es framework-agnostico, solo cambia el dataset. Dataset de ejemplo: 10 controles ISO 27001 del Anexo A, 8 controles COBIT DSS."
 
-echo "Issue 1 creado"
+gh issue create \
+  --title "feat: audit trail - trazabilidad de cambios por hallazgo" \
+  --label "enhancement" \
+  --body "El sistema no registra quien hizo que cambio ni cuando. En una herramienta de auditoria real la trazabilidad de las decisiones es un requisito metodologico. Propuesta: almacenamiento en localStorage del historial de cambios. Cada entrada: timestamp, campo modificado, valor anterior, valor nuevo. Panel Historial visible desde el ID del control. Export del audit trail en CSV/JSON. Sin backend, el trail vive en el browser."
 
-gh issue create --repo $REPO \
-  --title "feat: exportar reporte PDF con hallazgos filtrados" \
-  --body "## Descripción
-Generar un PDF del estado actual de la auditoría con los filtros aplicados:
-- Tabla de hallazgos visibles (respeta filtros activos)
-- Resumen de métricas superiores
-- Sección de hallazgos vencidos y próximos a vencer
+gh issue create \
+  --title "feat: backend minimo con persistencia real (Node.js + SQLite)" \
+  --label "enhancement,backend" \
+  --body "El prototipo es estatico: los cambios no persisten entre sesiones ni usuarios. Propuesta: Node.js + Express + SQLite. 4 endpoints: GET /api/controls, PATCH /api/controls/:id/remediation, GET /api/controls/:id/history, POST /api/controls/:id/comments. El frontend solo cambia la URL del fetch: data/audit_matrix.json -> /api/controls. Autenticacion basica JWT con roles auditor/owner/readonly. Deploy posible en Railway o Render plan free."
 
-## Criterio de aceptación
-- PDF generado en el browser (sin backend), usando window.print() o librería client-side
-- Incluye fecha de generación y filtros aplicados en el header
-- Formato A4 legible en papel
-
-## Por qué es prioritario
-Un auditor necesita llevar el estado de la auditoría a una reunión. Hoy no hay forma de exportar."
-
-echo "Issue 2 creado"
-
-gh issue create --repo $REPO \
-  --title "feat: soporte multi-framework (ISO 27001 / CIS Controls v8)" \
-  --body "## Descripción
-Extender el modelo de datos para soportar frameworks alternativos al NIST CSF:
-- Agregar campo \`framework\` al JSON (NIST / ISO27001 / CIS)
-- Filtro por framework en la barra de filtros
-- Mapeo de dominios por framework (ej: ISO tiene 14 dominios vs 5 del NIST)
-
-## Criterio de aceptación
-- El mismo control puede tener referencias a múltiples frameworks
-- Los filtros de dominio se adaptan al framework seleccionado
-- El panel de detalle muestra la referencia de control correspondiente (ej: ISO 27001 A.9.4)
-
-## Por qué es prioritario
-El NIST CSF es un framework de alto nivel. En auditorías reales se trabaja en paralelo con ISO 27001 o CIS Controls. El mapeo cruzado agrega valor diferencial."
-
-echo "Issue 3 creado"
-
-gh issue create --repo $REPO \
-  --title "feat: historial de cambios por control (audit trail)" \
-  --body "## Descripción
-Registrar cada cambio de estado de un hallazgo con timestamp y usuario:
-- Array de eventos por control: [{ campo, valorAnterior, valorNuevo, fecha, usuario }]
-- Timeline visible en el panel de detalle
-- Exportable junto con el reporte PDF
-
-## Criterio de aceptación
-- El historial se mantiene en memoria durante la sesión
-- El panel de detalle muestra el timeline de cambios en la sección de gestión
-- Cada evento tiene timestamp, campo modificado y valores anterior/nuevo
-
-## Por qué es prioritario
-En auditoría, la trazabilidad es un requisito de compliance. Sin audit trail no hay evidencia de que los hallazgos fueron gestionados."
-
-echo "Issue 4 creado"
-
-gh issue create --repo $REPO \
-  --title "feat: backend mínimo con persistencia (SQLite / JSON file)" \
-  --body "## Descripción
-Agregar un backend mínimo para persistir cambios entre sesiones:
-- API REST mínima (Express o similar) con 3 endpoints: GET /controls, PATCH /control/:id, GET /export
-- Base de datos SQLite o archivo JSON en disco
-- Sin autenticación en v1 (localhost only)
-
-## Criterio de aceptación
-- Los cambios de estado/owner/deadline persisten al recargar la página
-- El frontend no necesita modificaciones (solo cambia la URL del fetch)
-- Deploy local documentado en README
-
-## Por qué es prioritario
-El salto de prototipo a herramienta real requiere persistencia. Es el cambio arquitectural más importante del roadmap."
-
-echo "Issue 5 creado"
 echo ""
-echo "Todos los issues creados. Verificar en: https://github.com/$REPO/issues"
+echo "Issues creados. Ver en: https://github.com/mgodoylegal-tech/cyber-audit-mini-lab/issues"
