@@ -133,6 +133,8 @@ function enrichRiskData(item) {
   if (!item.owner_remediacion)             penalizacion += 0.10;
   if (item.estado_hallazgo === 'Abierto')  penalizacion += 0.05;
 
+  const residualBase = residual; // valor antes de penalizar → visible en UI como "Base"
+
   if (penalizacion > 0) {
     residual = Math.min(inherente, Math.round(residual * (1 + penalizacion)));
   }
@@ -152,13 +154,14 @@ function enrichRiskData(item) {
 
   return {
     ...item,
-    efectividad_control: efectividad,
-    riesgo_inherente:    inherente,
-    riesgo_residual:     residual,
+    efectividad_control:  efectividad,
+    riesgo_inherente:     inherente,
+    riesgo_residual_base: residualBase,
+    riesgo_residual:      residual,
     penalizacion_gestion: penalizacion > 0 ? penalizacion : null,
     riskFlags,
-    diasHastaCompromiso: aging.dias,
-    agingStatus:         aging.status
+    diasHastaCompromiso:  aging.dias,
+    agingStatus:          aging.status
   };
 }
 
@@ -266,7 +269,54 @@ function renderRiskFlags(item) {
 function renderPenalizacionBadge(item) {
   if (!item.penalizacion_gestion) return '';
   const pct = Math.round(item.penalizacion_gestion * 100);
-  return `<span class="badge-penalizacion" title="Penalización por gestión deficiente: +${pct}%">+${pct}% gestión</span>`;
+  return `<span class="badge-penalizacion" title="Penalización por gestión deficiente: +${pct}%">+${pct}%</span>`;
+}
+
+// ─── HELPER: CÁLCULO DE ANTIGÜEDAD ───────────────────────────────────────────
+// Días desde la apertura del hallazgo hasta hoy.
+function calcAntiguedad(fechaApertura) {
+  if (!fechaApertura) return null;
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const apertura = new Date(fechaApertura + 'T00:00:00');
+  return Math.round((today - apertura) / (1000 * 60 * 60 * 24));
+}
+
+// ─── TRIAGE BAR ──────────────────────────────────────────────────────────────
+// Banda de situación: visible solo cuando hay flags activos.
+// Muestra qué escalar hoy con un clic para aplicar el filtro correspondiente.
+function renderTriageBar(data) {
+  const bar = document.getElementById('triageBar');
+  if (!bar) return;
+
+  const cv  = data.filter(d => d.riskFlags?.includes('critico-vencido')).length;
+  const so  = data.filter(d => d.riskFlags?.includes('sin-owner')).length;
+  const hc  = data.filter(d => d.riskFlags?.includes('hallazgo-critico-abierto')).length;
+  const asa = data.filter(d => d.riskFlags?.includes('aceptado-sin-aprobador')).length;
+  const total = cv + so + hc + asa;
+
+  if (!total) {
+    bar.style.display = 'none';
+    bar.innerHTML = '';
+    return;
+  }
+
+  bar.style.display = 'flex';
+  bar.innerHTML = `
+    <span class="triage-label">TRIAGE</span>
+    ${cv  ? `<button class="triage-item triage-critico-vencido" onclick="triageFilter('vencido','')">⚡ ${cv} crítico${cv>1?'s':''} + vencido${cv>1?'s':''}</button>` : ''}
+    ${so  ? `<button class="triage-item triage-sin-owner"       onclick="triageFilter('','')">◎ ${so} sin owner</button>` : ''}
+    ${hc  ? `<button class="triage-item triage-hallazgo-critico" onclick="triageFilter('','Abierto')">▲ ${hc} crítico${hc>1?'s':''} abierto${hc>1?'s':''}</button>` : ''}
+    ${asa ? `<button class="triage-item triage-aceptado-sin-aprobador" onclick="triageFilter('','')">⚠ ${asa} aceptación sin aprobador</button>` : ''}
+    <span class="triage-hint">→ clic para filtrar · ${total} situación${total>1?'es':''} requieren atención</span>`;
+}
+
+// Aplica filtros desde el triage bar
+function triageFilter(aging, hallazgo) {
+  const elAging    = document.getElementById('filterAging');
+  const elHallazgo = document.getElementById('filterHallazgo');
+  if (elAging    && aging)    elAging.value    = aging;
+  if (elHallazgo && hallazgo) elHallazgo.value = hallazgo;
+  applyFilters();
 }
 
 // ─── HELPER: FORMATO DE FECHA ─────────────────────────────────────────────────
@@ -404,6 +454,8 @@ function renderSummary(data) {
     data.length === fullData.length
       ? `Mostrando todos (${data.length})`
       : `${data.length} resultado${data.length !== 1 ? 's' : ''} filtrado${data.length !== 1 ? 's' : ''}`;
+
+  renderTriageBar(data);
 }
 
 // ─── TABLA (DESKTOP) ─────────────────────────────────────────────────────────
@@ -430,7 +482,18 @@ function renderTable(data) {
 
     // Risk flags compactos para la celda de riesgo
     const flagsHtml = renderRiskFlags(item);
-    const penalHtml = renderPenalizacionBadge(item);
+
+    // Riesgo residual: muestra base → ajustado cuando hay penalización
+    const penalizado = item.penalizacion_gestion && item.riesgo_residual !== item.riesgo_residual_base;
+    const pct = penalizado ? Math.round(item.penalizacion_gestion * 100) : 0;
+    const rrCell = penalizado
+      ? `<div class="riesgo-delta-cell" title="Base: ${item.riesgo_residual_base} → Ajustado por gestión deficiente (+${pct}%): ${item.riesgo_residual}">
+           <span class="riesgo-base-val">${item.riesgo_residual_base}</span>
+           <span class="riesgo-delta-arrow">→</span>
+           <span class="riesgo-num riesgo-${rr.cls}">${item.riesgo_residual}</span>
+           <span class="badge-penalizacion">+${pct}%</span>
+         </div>`
+      : `<span class="riesgo-num riesgo-${rr.cls}" title="${rr.label}">${item.riesgo_residual}</span>`;
 
     tr.innerHTML = `
       <td class="td-id">${String(item.id).padStart(2, '0')}</td>
@@ -443,10 +506,7 @@ function renderTable(data) {
         <span class="badge-estado badge-estado-${estadoClass(item.estado_control)}">${item.estado_control}</span>
         <span class="badge-hallazgo badge-hallazgo-${hallazgoClass(item.estado_hallazgo)}">${item.estado_hallazgo}</span>
       </td>
-      <td class="td-riesgo-r">
-        <span class="riesgo-num riesgo-${rr.cls}" title="${rr.label}: inherente ${item.riesgo_inherente} → residual ${item.riesgo_residual}">${item.riesgo_residual}</span>
-        ${penalHtml}
-      </td>
+      <td class="td-riesgo-r">${rrCell}</td>
       <td class="td-owner">${ownerHtml}</td>
       <td class="td-deadline">${formatFecha(item.fecha_compromiso)}</td>
       <td class="td-aging">${renderAgingBadge(item)}</td>`;
@@ -546,16 +606,23 @@ function renderDetail(item) {
   else if (item.naturaleza_control === 'Manual')       pesosLabel = 'D×0.65 + O×0.35';
   else                                                  pesosLabel = 'D×0.50 + O×0.50';
 
-  // Penalización visible en el encabezado
+  // Penalización + residual base vs ajustado — visible en el encabezado
+  const penalizado = item.penalizacion_gestion && item.riesgo_residual !== item.riesgo_residual_base;
   let penalText = '';
-  if (item.penalizacion_gestion) {
+  if (penalizado) {
     const pct = Math.round(item.penalizacion_gestion * 100);
     const motivos = [];
-    if (item.agingStatus === 'vencido')          motivos.push('deadline vencido (+15%)');
-    if (!item.owner_remediacion)                 motivos.push('sin owner (+10%)');
-    if (item.estado_hallazgo === 'Abierto')      motivos.push('hallazgo abierto (+5%)');
+    if (item.agingStatus === 'vencido')          motivos.push('deadline vencido <em>(+15%)</em>');
+    if (!item.owner_remediacion)                 motivos.push('sin owner <em>(+10%)</em>');
+    if (item.estado_hallazgo === 'Abierto')      motivos.push('hallazgo abierto <em>(+5%)</em>');
+    const rrBase = riesgoNivel(item.riesgo_residual_base);
     penalText = `<div class="penalizacion-explicacion">
-      <span class="badge-penalizacion">+${pct}% penalización de gestión</span>
+      <span class="penal-delta">
+        Residual base: <span class="riesgo-num riesgo-${rrBase.cls}" style="font-size:11px">${item.riesgo_residual_base}</span>
+        &nbsp;→&nbsp;
+        Ajustado por gestión: <span class="riesgo-num riesgo-${rr.cls}" style="font-size:11px">${item.riesgo_residual}</span>
+        <span class="badge-penalizacion">+${pct}% gestión</span>
+      </span>
       <span class="penalizacion-motivos">${motivos.join(' · ')}</span>
     </div>`;
   }
@@ -593,25 +660,51 @@ function renderDetail(item) {
     return html;
   })();
 
-  // Lifecycle del hallazgo
+  // Lifecycle del hallazgo: timeline visual
+  const diasAbierto = calcAntiguedad(item.fecha_apertura_hallazgo);
+  const estaAbierto = !item.fecha_cierre_hallazgo;
   const lifecycleHtml = `
-    <div class="lifecycle-row">
-      <span class="lifecycle-item"><span class="lifecycle-label">Apertura:</span> ${formatFecha(item.fecha_apertura_hallazgo)}</span>
-      <span class="lifecycle-item"><span class="lifecycle-label">Verificación:</span> ${item.fecha_verificacion ? formatFecha(item.fecha_verificacion) : '<span style="color:var(--text-muted)">Pendiente</span>'}</span>
-      <span class="lifecycle-item"><span class="lifecycle-label">Cierre:</span> ${item.fecha_cierre_hallazgo ? formatFecha(item.fecha_cierre_hallazgo) : '<span style="color:var(--text-muted)">Abierto</span>'}</span>
-      ${item.motivo_cierre ? `<span class="lifecycle-item"><span class="lifecycle-label">Motivo:</span> ${item.motivo_cierre}</span>` : ''}
-    </div>`;
+    <div class="lifecycle-timeline">
+      <div class="lt-step lt-step-done">
+        <div class="lt-dot lt-dot-done"></div>
+        <div class="lt-info">
+          <span class="lt-label">Apertura</span>
+          <span class="lt-date">${formatFecha(item.fecha_apertura_hallazgo)}</span>
+        </div>
+      </div>
+      <div class="lt-connector ${estaAbierto ? 'lt-connector-active' : 'lt-connector-done'}"></div>
+      <div class="lt-step ${item.fecha_verificacion ? 'lt-step-done' : 'lt-step-pending'}">
+        <div class="lt-dot ${item.fecha_verificacion ? 'lt-dot-done' : 'lt-dot-pending'}"></div>
+        <div class="lt-info">
+          <span class="lt-label">Verificación</span>
+          <span class="lt-date">${item.fecha_verificacion ? formatFecha(item.fecha_verificacion) : 'Pendiente'}</span>
+        </div>
+      </div>
+      <div class="lt-connector ${item.fecha_cierre_hallazgo ? 'lt-connector-done' : 'lt-connector-pending'}"></div>
+      <div class="lt-step ${item.fecha_cierre_hallazgo ? 'lt-step-done' : 'lt-step-pending'}">
+        <div class="lt-dot ${item.fecha_cierre_hallazgo ? 'lt-dot-done' : 'lt-dot-pending'}"></div>
+        <div class="lt-info">
+          <span class="lt-label">Cierre</span>
+          <span class="lt-date">${item.fecha_cierre_hallazgo ? formatFecha(item.fecha_cierre_hallazgo) : 'Abierto'}</span>
+          ${item.motivo_cierre ? `<span class="lt-motivo">${item.motivo_cierre}</span>` : ''}
+        </div>
+      </div>
+    </div>
+    ${diasAbierto !== null ? `<div class="lifecycle-antiguedad ${diasAbierto > 180 ? 'ant-alto' : diasAbierto > 60 ? 'ant-medio' : 'ant-normal'}">
+      Hallazgo abierto hace <strong>${diasAbierto}</strong> día${diasAbierto !== 1 ? 's' : ''}
+      ${diasAbierto > 180 ? ' · Antigüedad elevada — considerar escalamiento' : ''}
+    </div>` : ''}`;
 
   // Risk flags en el detalle
   const flagsDetailHtml = item.riskFlags?.length
     ? `<div class="detail-flags-row">${renderRiskFlags(item)}</div>`
     : '';
 
-  // Explicación del riesgo residual
-  const explicacionHtml = item.explicacion_riesgo_residual
-    ? `<div class="explicacion-residual-block">
-        <span class="ev-label ev-criterio">Por qué este residual</span>
-        <p>${item.explicacion_riesgo_residual}</p>
+  // Explicación del riesgo residual → se muestra junto al scoring, no en sección 3
+  const explicacionHeaderHtml = item.explicacion_riesgo_residual
+    ? `<div class="explicacion-residual-inline">
+        <span class="ev-label ev-criterio" style="font-size:8px">Por qué este residual</span>
+        <p style="margin:0;font-size:11px;color:var(--text-secondary);line-height:1.5">${item.explicacion_riesgo_residual}</p>
       </div>`
     : '';
 
@@ -629,6 +722,7 @@ function renderDetail(item) {
         <span class="pesos-label" title="Pesos por naturaleza: ${pesosLabel}">${pesosLabel} = ${item.efectividad_control}</span>
       </div>
       ${penalText}
+      ${explicacionHeaderHtml}
       ${flagsDetailHtml}
       <div class="detail-badges">
         <span class="badge badge-${impactoClass(item.impacto)}">${item.impacto}</span>
@@ -669,10 +763,9 @@ function renderDetail(item) {
         </div>
         <div class="gestion-row">
           <span class="gestion-label">Ciclo de vida:</span>
-          <span>${lifecycleHtml}</span>
+          <span style="flex:1">${lifecycleHtml}</span>
         </div>
       </div>
-      ${explicacionHtml}
     </div>
 
     <!-- 4. EVIDENCIA REQUERIDA VS OBSERVADA -->
