@@ -233,4 +233,20 @@ cyber-audit-mini-lab/
 
 ---
 
-*Matías Godoy · Legal-Tech / GRC / Ciberseguridad · [github.com/mgodoylegal-tech](https://github.com/mgodoylegal-tech)*
+---
+
+## Lugar en el ecosistema LAALT
+
+Cyber Audit Mini Lab es la **capa de visualizacion** del ecosistema LAALT (Laboratorio de Auditoria Legal-Tecnica). Su funcion es mostrar hallazgos de auditoria en una interfaz visual clara y profesional.
+
+| Proyecto | Funcion |
+|----------|---------|
+| **cyber-audit-core-lab** | Metodo / doctrina / framework / app operativa |
+| **Auditor Guide** | Aprendizaje / razonamiento guiado / entrenamiento |
+| **Cyber Audit Mini Lab** (este proyecto) | Visualizacion / demo / tablero de hallazgos |
+
+El mini-lab consume terminologia, taxonomia y logica de scoring del `core-lab`. En futuras versiones, la alineacion con el metodo LAALT se profundizara (Fase 3 del MASTERPLAN del ecosistema).
+
+---
+
+*Matias Godoy · Legal-Tech / GRC / Ciberseguridad · [github.com/mgodoylegal-tech](https://github.com/mgodoylegal-tech)*

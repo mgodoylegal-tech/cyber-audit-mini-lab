@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#070b14" />
-  <title>Cyber Audit Mini Lab</title>
+  <title>Cyber Audit Mini Lab — Ecosistema LAALT</title>
+  <meta name="description" content="Herramienta de gestion de hallazgos de auditoria de ciberseguridad. Triage, scoring con penalizaciones de gestion, lifecycle de hallazgos. Ecosistema LAALT." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
@@ -27,6 +28,10 @@
           <span class="meta-value">GRC · Legal-Tech</span>
         </div>
         <div class="meta-item">
+          <span class="meta-label">Ecosistema</span>
+          <span class="meta-value">LAALT</span>
+        </div>
+        <div class="meta-item">
           <span class="meta-label">Versión</span>
           <span class="meta-value status-dot">Prototipo v1.4</span>
         </div>
@@ -43,20 +48,24 @@
     <section class="filters-bar">
       <div class="filters-label">Filtrar por</div>
       <div class="filters-group">
+        <label for="filterDominio" class="sr-only">Filtrar por dominio</label>
         <select id="filterDominio" class="filter-select">
           <option value="">Todos los dominios</option>
         </select>
+        <label for="filterPrioridad" class="sr-only">Filtrar por prioridad</label>
         <select id="filterPrioridad" class="filter-select">
           <option value="">Toda prioridad</option>
           <option value="Crítica">Crítica</option>
           <option value="Alta">Alta</option>
         </select>
+        <label for="filterImpacto" class="sr-only">Filtrar por impacto</label>
         <select id="filterImpacto" class="filter-select">
           <option value="">Todo impacto</option>
           <option value="Crítico">Crítico</option>
           <option value="Alto">Alto</option>
           <option value="Medio">Medio</option>
         </select>
+        <label for="filterEstado" class="sr-only">Filtrar por estado de control</label>
         <select id="filterEstado" class="filter-select">
           <option value="">Todo estado control</option>
           <option value="No implementado">No implementado</option>
@@ -64,6 +73,7 @@
           <option value="Implementado">Implementado</option>
           <option value="Validado">Validado</option>
         </select>
+        <label for="filterHallazgo" class="sr-only">Filtrar por estado de hallazgo</label>
         <select id="filterHallazgo" class="filter-select">
           <option value="">Todo hallazgo</option>
           <option value="Abierto">Abierto</option>
@@ -72,12 +82,14 @@
           <option value="Aceptado">Aceptado</option>
           <option value="Cerrado">Cerrado</option>
         </select>
+        <label for="filterAging" class="sr-only">Filtrar por deadline</label>
         <select id="filterAging" class="filter-select">
           <option value="">Todo deadline</option>
           <option value="vencido">⚠ Vencido</option>
           <option value="proximo">Próximo (≤7d)</option>
           <option value="en-termino">En término</option>
         </select>
+        <label for="filterDecision" class="sr-only">Filtrar por decision de riesgo</label>
         <select id="filterDecision" class="filter-select">
           <option value="">Toda decisión</option>
           <option value="Remediar">Remediar</option>
@@ -85,6 +97,7 @@
           <option value="Transferir">Transferir</option>
           <option value="Mitigar">Mitigar</option>
         </select>
+        <label for="filterCompliance" class="sr-only">Filtrar por implicancia compliance</label>
         <select id="filterCompliance" class="filter-select">
           <option value="">Toda implicancia</option>
           <option value="Debida diligencia documentable">Debida diligencia</option>
@@ -94,8 +107,16 @@
         </select>
         <button id="btnReset" class="btn-reset">Limpiar</button>
       </div>
+      <div class="filters-actions">
+        <button class="btn-export" onclick="exportJSON()" title="Descargar audit_matrix.json con los cambios aplicados">↓ Exportar JSON</button>
+        <button class="btn-trail" onclick="toggleTrailPanel()">
+          ⏱ Cambios <span id="trailBadge" class="trail-badge" style="display:none"></span>
+        </button>
+      </div>
       <div class="filter-count" id="filterCount"></div>
     </section>
+
+    <div id="trailPanel" style="display:none"></div>
 
     <!-- TABLA: visible en desktop -->
     <section id="tableSection">
@@ -111,6 +132,7 @@
               <th>Owner</th>
               <th class="sortable" data-sort="diasHastaCompromiso" onclick="sortBy('diasHastaCompromiso')">Deadline ↕</th>
               <th class="sortable" data-sort="diasHastaCompromiso" onclick="sortBy('diasHastaCompromiso')">Aging</th>
+              <th class="th-edit"></th>
             </tr>
           </thead>
           <tbody id="tableBody"></tbody>

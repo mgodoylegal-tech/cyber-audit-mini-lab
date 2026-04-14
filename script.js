@@ -7,12 +7,47 @@ let sortField = null, sortDir = -1;
 
 const IMPACTO_NUM = { 'Crítico': 5, 'Alto': 4, 'Medio': 3, 'Bajo': 2, 'Mínimo': 1 };
 
+// ─── v1.5: PERSISTENCIA LOCAL ─────────────────────────────────────────────────
+const TRAIL_KEY = 'laalt_mini_trail';
+const EDITS_KEY = 'laalt_mini_edits';
+let editedMap   = {};   // id → { campo: valor } — overrides sobre el JSON original
+let editingId   = null; // id del control que está siendo editado en este momento
+
 // ─── INICIO ──────────────────────────────────────────────────────────────────
+async function fetchWithRetry(url, retries = 3, delayMs = 800) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      await new Promise(r => setTimeout(r, delayMs * attempt));
+    }
+  }
+}
+
 async function init() {
+  const errorRow = (msg) => {
+    document.getElementById('tableBody').innerHTML =
+      `<tr><td colspan="8" style="text-align:center;color:#f87171;padding:20px">${msg}</td></tr>`;
+  };
+
   try {
-    const res = await fetch('data/audit_matrix.json');
-    const raw = await res.json();
+    const raw = await fetchWithRetry('data/audit_matrix.json');
+    if (!Array.isArray(raw) || raw.length === 0) {
+      errorRow('audit_matrix.json está vacío o tiene formato inválido.');
+      return;
+    }
     fullData = raw.map(item => enrichRiskData(flattenItem(item)));
+    // v1.5: aplicar ediciones guardadas en localStorage
+    loadPersistence();
+    if (Object.keys(editedMap).length) {
+      fullData = fullData.map(item => {
+        const ov = editedMap[item.id];
+        return ov ? enrichRiskData({ ...item, ...ov }) : item;
+      });
+    }
     filteredData = [...fullData];
     buildFilters();
     renderSummary(filteredData);
@@ -21,9 +56,10 @@ async function init() {
     bindFilters();
     handleResponsiveView();
     window.addEventListener('resize', handleResponsiveView);
+    updateTrailBadge();
   } catch(err) {
-    document.getElementById('tableBody').innerHTML =
-      '<tr><td colspan="8" style="text-align:center;color:#f87171;padding:20px">Error al cargar audit_matrix.json — usá Live Server o servidor local</td></tr>';
+    errorRow('Error al cargar audit_matrix.json — usá Live Server o servidor local. ' +
+             `Detalle: ${err.message}`);
   }
 }
 
@@ -304,18 +340,34 @@ function renderTriageBar(data) {
   bar.innerHTML = `
     <span class="triage-label">TRIAGE</span>
     ${cv  ? `<button class="triage-item triage-critico-vencido" onclick="triageFilter('vencido','')">⚡ ${cv} crítico${cv>1?'s':''} + vencido${cv>1?'s':''}</button>` : ''}
-    ${so  ? `<button class="triage-item triage-sin-owner"       onclick="triageFilter('','')">◎ ${so} sin owner</button>` : ''}
+    ${so  ? `<button class="triage-item triage-sin-owner"       onclick="triageFilter('','','sin-owner')">◎ ${so} sin owner</button>` : ''}
     ${hc  ? `<button class="triage-item triage-hallazgo-critico" onclick="triageFilter('','Abierto')">▲ ${hc} crítico${hc>1?'s':''} abierto${hc>1?'s':''}</button>` : ''}
-    ${asa ? `<button class="triage-item triage-aceptado-sin-aprobador" onclick="triageFilter('','')">⚠ ${asa} aceptación sin aprobador</button>` : ''}
+    ${asa ? `<button class="triage-item triage-aceptado-sin-aprobador" onclick="triageFilter('','','aceptado-sin-aprobador')">⚠ ${asa} aceptación sin aprobador</button>` : ''}
     <span class="triage-hint">→ clic para filtrar · ${total} situación${total>1?'es':''} requieren atención</span>`;
 }
 
 // Aplica filtros desde el triage bar
-function triageFilter(aging, hallazgo) {
+function triageFilter(aging, hallazgo, riskFlag) {
+  // Reset filtros antes de aplicar el nuevo
+  ['filterDominio','filterPrioridad','filterImpacto','filterCompliance','filterEstado','filterHallazgo','filterAging','filterDecision']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
   const elAging    = document.getElementById('filterAging');
   const elHallazgo = document.getElementById('filterHallazgo');
   if (elAging    && aging)    elAging.value    = aging;
   if (elHallazgo && hallazgo) elHallazgo.value = hallazgo;
+
+  // Filtro por riskFlag (sin-owner, aceptado-sin-aprobador)
+  if (riskFlag) {
+    filteredData = fullData.filter(d => d.riskFlags?.includes(riskFlag));
+    selectedId = null;
+    if (sortField) applySort();
+    renderSummary(filteredData);
+    renderTable(filteredData);
+    renderCards(filteredData);
+    clearDetail();
+    return;
+  }
   applyFilters();
 }
 
@@ -469,9 +521,11 @@ function renderTable(data) {
 
   data.forEach(item => {
     const tr = document.createElement('tr');
+    tr.dataset.id = item.id;
     if (item.id === selectedId)                                  tr.classList.add('selected');
     if (item.agingStatus === 'vencido')                          tr.classList.add('row-vencido');
     if (item.riskFlags?.includes('critico-vencido'))             tr.classList.add('row-critico-vencido');
+    if (editedMap[item.id])                                      tr.classList.add('row-editado');
 
     const rr = riesgoNivel(item.riesgo_residual);
 
@@ -509,7 +563,13 @@ function renderTable(data) {
       <td class="td-riesgo-r">${rrCell}</td>
       <td class="td-owner">${ownerHtml}</td>
       <td class="td-deadline">${formatFecha(item.fecha_compromiso)}</td>
-      <td class="td-aging">${renderAgingBadge(item)}</td>`;
+      <td class="td-aging">${renderAgingBadge(item)}</td>
+      <td class="td-edit"><button class="btn-edit-row" title="Editar estado, owner y deadline">✏</button></td>`;
+
+    tr.querySelector('.btn-edit-row').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditPanel(item.id);
+    });
 
     tr.addEventListener('click', () => {
       selectedId = item.id;
@@ -887,6 +947,257 @@ function handleResponsiveView() {
   const cardsSection = document.getElementById('cardsSection');
   if (tableSection) tableSection.style.display = isMobile ? 'none' : 'block';
   if (cardsSection) cardsSection.style.display = isMobile ? 'block' : 'none';
+}
+
+// ─── v1.5: PERSISTENCIA LOCAL ─────────────────────────────────────────────────
+
+function loadPersistence() {
+  try {
+    const saved = localStorage.getItem(EDITS_KEY);
+    if (saved) editedMap = JSON.parse(saved);
+  } catch(_) { editedMap = {}; }
+}
+
+function saveEdits() {
+  localStorage.setItem(EDITS_KEY, JSON.stringify(editedMap));
+}
+
+function getTrail() {
+  try { return JSON.parse(localStorage.getItem(TRAIL_KEY) || '[]'); } catch(_) { return []; }
+}
+
+function addTrailEntry(controlId, campo, valorAntes, valorDespues) {
+  const trail = getTrail();
+  trail.unshift({ ts: new Date().toISOString(), controlId, campo, valorAntes, valorDespues });
+  localStorage.setItem(TRAIL_KEY, JSON.stringify(trail.slice(0, 300)));
+}
+
+function updateTrailBadge() {
+  const badge = document.getElementById('trailBadge');
+  const count = getTrail().length;
+  if (!badge) return;
+  badge.textContent = count || '';
+  badge.style.display = count ? 'inline-flex' : 'none';
+}
+
+// ─── v1.5: EDICIÓN INLINE ────────────────────────────────────────────────────
+
+function openEditPanel(id) {
+  if (editingId === id) { closeEditPanel(); return; }
+  closeEditPanel();
+  editingId = id;
+
+  const item = fullData.find(d => d.id === id);
+  if (!item) return;
+
+  const tbody = document.getElementById('tableBody');
+  const targetRow = tbody.querySelector(`tr[data-id="${id}"]`);
+  if (!targetRow) return;
+
+  const editRow = document.createElement('tr');
+  editRow.className = 'edit-inline-row';
+  editRow.innerHTML = `
+    <td colspan="9" class="edit-inline-cell">
+      <div class="edit-inline-form">
+        <div class="edit-inline-fields">
+          <label class="edit-field-group">
+            <span>Estado hallazgo</span>
+            <select id="edit-estado-${id}" class="edit-select">
+              ${['Abierto','En curso','Mitigado','Aceptado','Cerrado'].map(v =>
+                `<option value="${v}"${item.estado_hallazgo === v ? ' selected' : ''}>${v}</option>`
+              ).join('')}
+            </select>
+          </label>
+          <label class="edit-field-group">
+            <span>Owner remediación</span>
+            <input type="text" id="edit-owner-${id}" class="edit-input"
+              value="${item.owner_remediacion || ''}" placeholder="Sin asignar" />
+          </label>
+          <label class="edit-field-group">
+            <span>Deadline</span>
+            <input type="date" id="edit-deadline-${id}" class="edit-input"
+              value="${item.fecha_compromiso || ''}" />
+          </label>
+          <label class="edit-field-group">
+            <span>Decisión de riesgo</span>
+            <select id="edit-decision-${id}" class="edit-select">
+              ${['Remediar','Aceptado','Transferir','Mitigar'].map(v =>
+                `<option value="${v}"${item.decision_riesgo === v ? ' selected' : ''}>${v}</option>`
+              ).join('')}
+            </select>
+          </label>
+        </div>
+        <div class="edit-inline-actions">
+          <button class="btn-edit-save" onclick="saveEdit(${id})">Guardar</button>
+          <button class="btn-edit-cancel" onclick="closeEditPanel()">Cancelar</button>
+          ${editedMap[id] ? `<span class="edit-modified-note">✓ Control modificado</span>` : ''}
+        </div>
+      </div>
+    </td>`;
+
+  targetRow.after(editRow);
+  const ownerInput = document.getElementById(`edit-owner-${id}`);
+  if (ownerInput) ownerInput.focus();
+}
+
+function closeEditPanel() {
+  document.querySelectorAll('.edit-inline-row').forEach(r => r.remove());
+  editingId = null;
+}
+
+function saveEdit(id) {
+  const item = fullData.find(d => d.id === id);
+  if (!item) return;
+
+  const newEstado   = document.getElementById(`edit-estado-${id}`)?.value;
+  const rawOwner    = document.getElementById(`edit-owner-${id}`)?.value?.trim();
+  const newOwner    = rawOwner || null;
+  const newDeadline = document.getElementById(`edit-deadline-${id}`)?.value || null;
+  const newDecision = document.getElementById(`edit-decision-${id}`)?.value;
+
+  const cambios = {};
+  if (newEstado   !== item.estado_hallazgo)  { addTrailEntry(id, 'estado_hallazgo',  item.estado_hallazgo,  newEstado);   cambios.estado_hallazgo  = newEstado; }
+  if (newOwner    !== item.owner_remediacion) { addTrailEntry(id, 'owner_remediacion', item.owner_remediacion, newOwner);   cambios.owner_remediacion = newOwner; }
+  if (newDeadline !== item.fecha_compromiso)  { addTrailEntry(id, 'fecha_compromiso',  item.fecha_compromiso,  newDeadline); cambios.fecha_compromiso  = newDeadline; }
+  if (newDecision !== item.decision_riesgo)   { addTrailEntry(id, 'decision_riesgo',   item.decision_riesgo,   newDecision); cambios.decision_riesgo  = newDecision; }
+
+  closeEditPanel();
+
+  if (!Object.keys(cambios).length) return;
+
+  editedMap[id] = { ...(editedMap[id] || {}), ...cambios };
+  saveEdits();
+
+  const updated = enrichRiskData({ ...item, ...cambios });
+  fullData = fullData.map(d => d.id === id ? updated : d);
+  applyFilters();
+  if (selectedId === id) renderDetail(updated);
+  updateTrailBadge();
+  showToast(`C${String(id).padStart(2,'0')} guardado`);
+}
+
+// ─── v1.5: EXPORT JSON ───────────────────────────────────────────────────────
+
+function exportJSON() {
+  const exportData = fullData.map(item => ({
+    id: item.id,
+    control_definition: {
+      dominio: item.dominio, riesgo: item.riesgo,
+      objetivo_control: item.objetivo_control, control_esperado: item.control_esperado,
+      evidencia_minima: item.evidencia_minima, activo_afectado: item.activo_afectado,
+      tipo_control: item.tipo_control, naturaleza_control: item.naturaleza_control,
+      responsable: item.responsable, frecuencia: item.frecuencia,
+      criterio_evaluacion: item.criterio_evaluacion,
+      implicancia_compliance: item.implicancia_compliance,
+      impacto: item.impacto, prioridad: item.prioridad, probabilidad: item.probabilidad,
+      hallazgo_potencial: item.hallazgo_potencial, riesgo_legal: item.riesgo_legal,
+      por_que_importa: item.por_que_importa, consecuencia_potencial: item.consecuencia_potencial,
+    },
+    audit_assessment: {
+      diseno_control: item.diseno_control, operacion_control: item.operacion_control,
+      resultado_prueba: item.resultado_prueba, evidencia_observada: item.evidencia_observada,
+      brecha_detectada: item.brecha_detectada, nivel_confianza: item.nivel_confianza,
+      estado_control: item.estado_control, ultima_revision: item.ultima_revision,
+      observacion_auditor: item.observacion_auditor,
+    },
+    remediation_tracking: {
+      estado_hallazgo: item.estado_hallazgo, owner_remediacion: item.owner_remediacion,
+      fecha_compromiso: item.fecha_compromiso, fecha_verificacion: item.fecha_verificacion,
+      plan_remediacion: item.plan_remediacion, decision_riesgo: item.decision_riesgo,
+      justificacion_aceptacion: item.justificacion_aceptacion,
+      fecha_apertura_hallazgo: item.fecha_apertura_hallazgo,
+      fecha_cierre_hallazgo: item.fecha_cierre_hallazgo,
+      motivo_cierre: item.motivo_cierre, aprobador_riesgo: item.aprobador_riesgo,
+      explicacion_riesgo_residual: item.explicacion_riesgo_residual,
+    },
+    impact_analysis: {
+      impacto_negocio: item.impacto_negocio, impacto_operativo: item.impacto_operativo,
+      impacto_regulatorio: item.impacto_regulatorio,
+    }
+  }));
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `audit_matrix_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('JSON exportado');
+}
+
+// ─── v1.5: RESET CAMBIOS ─────────────────────────────────────────────────────
+
+async function resetChanges() {
+  if (!Object.keys(editedMap).length && !getTrail().length) {
+    showToast('Sin cambios para resetear'); return;
+  }
+  if (!confirm('¿Resetear todos los cambios y volver al dataset original?\nEsto borrará el historial.')) return;
+  editedMap = {};
+  localStorage.removeItem(EDITS_KEY);
+  localStorage.removeItem(TRAIL_KEY);
+  try {
+    const raw = await fetchWithRetry('data/audit_matrix.json');
+    fullData = raw.map(item => enrichRiskData(flattenItem(item)));
+    filteredData = [...fullData];
+    selectedId = null;
+    applyFilters();
+    updateTrailBadge();
+    renderTrailPanel();
+    showToast('Dataset restaurado al original');
+  } catch(e) { console.error(e); }
+}
+
+// ─── v1.5: TRAIL PANEL ───────────────────────────────────────────────────────
+
+function toggleTrailPanel() {
+  const panel = document.getElementById('trailPanel');
+  if (!panel) return;
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (!open) renderTrailPanel();
+}
+
+function renderTrailPanel() {
+  const panel = document.getElementById('trailPanel');
+  if (!panel) return;
+  const trail = getTrail();
+  if (!trail.length) {
+    panel.innerHTML = '<p class="trail-empty">Sin cambios registrados todavía.</p>';
+    return;
+  }
+  panel.innerHTML = `
+    <div class="trail-header">
+      <span>Historial de cambios (${trail.length})</span>
+      <button class="btn-reset-changes" onclick="resetChanges()">↺ Resetear todo</button>
+    </div>
+    <div class="trail-list">
+      ${trail.map(e => `
+        <div class="trail-entry">
+          <span class="trail-ts">${new Date(e.ts).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})}</span>
+          <span class="trail-ctrl">C${String(e.controlId).padStart(2,'0')}</span>
+          <span class="trail-field">${e.campo}</span>
+          <span class="trail-before">${e.valorAntes ?? '—'}</span>
+          <span class="trail-arrow">→</span>
+          <span class="trail-after">${e.valorDespues ?? '—'}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ─── v1.5: TOAST ─────────────────────────────────────────────────────────────
+
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add('toast-show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('toast-show'), 2200);
 }
 
 init();
