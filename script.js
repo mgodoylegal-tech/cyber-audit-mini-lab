@@ -290,7 +290,7 @@ function renderRiskFlags(item) {
       case 'critico-vencido':
         return '<span class="risk-flag risk-flag-critico-vencido" title="Riesgo alto + deadline vencido">⚡ Crítico vencido</span>';
       case 'sin-owner':
-        return '<span class="risk-flag risk-flag-sin-owner" title="Sin responsable formal asignado">◎ Sin owner</span>';
+        return '<span class="risk-flag risk-flag-sin-owner" title="Sin responsable formal asignado">◎ Sin responsable</span>';
       case 'hallazgo-critico-abierto':
         return '<span class="risk-flag risk-flag-hallazgo-critico" title="Hallazgo crítico sin iniciar">▲ Abierto crítico</span>';
       case 'aceptado-sin-aprobador':
@@ -340,7 +340,7 @@ function renderTriageBar(data) {
   bar.innerHTML = `
     <span class="triage-label">TRIAGE</span>
     ${cv  ? `<button class="triage-item triage-critico-vencido" onclick="triageFilter('vencido','')">⚡ ${cv} crítico${cv>1?'s':''} + vencido${cv>1?'s':''}</button>` : ''}
-    ${so  ? `<button class="triage-item triage-sin-owner"       onclick="triageFilter('','','sin-owner')">◎ ${so} sin owner</button>` : ''}
+    ${so  ? `<button class="triage-item triage-sin-owner"       onclick="triageFilter('','','sin-owner')">◎ ${so} sin responsable</button>` : ''}
     ${hc  ? `<button class="triage-item triage-hallazgo-critico" onclick="triageFilter('','Abierto')">▲ ${hc} crítico${hc>1?'s':''} abierto${hc>1?'s':''}</button>` : ''}
     ${asa ? `<button class="triage-item triage-aceptado-sin-aprobador" onclick="triageFilter('','','aceptado-sin-aprobador')">⚠ ${asa} aceptación sin aprobador</button>` : ''}
     <span class="triage-hint">→ clic para filtrar · ${total} situación${total>1?'es':''} requieren atención</span>`;
@@ -643,7 +643,7 @@ function renderCards(data) {
 //
 // 1. Encabezado: riesgo inherente → residual · scoring · badges
 // 2. Brecha detectada · resultado · confianza
-// 3. Seguimiento del hallazgo (operativo: owner, deadline, decisión, lifecycle)
+  // 3. Seguimiento del hallazgo (lectura visual: responsable, deadline, decisión, ciclo de vida)
 // 4. Evidencia requerida vs observada + criterio de evaluación
 // 5. Observación del auditor
 // 6. Análisis de impacto (negocio · operativo · regulatorio)
@@ -673,7 +673,7 @@ function renderDetail(item) {
     const pct = Math.round(item.penalizacion_gestion * 100);
     const motivos = [];
     if (item.agingStatus === 'vencido')          motivos.push('deadline vencido <em>(+15%)</em>');
-    if (!item.owner_remediacion)                 motivos.push('sin owner <em>(+10%)</em>');
+    if (!item.owner_remediacion)                 motivos.push('sin responsable <em>(+10%)</em>');
     if (item.estado_hallazgo === 'Abierto')      motivos.push('hallazgo abierto <em>(+5%)</em>');
     const rrBase = riesgoNivel(item.riesgo_residual_base);
     penalText = `<div class="penalizacion-explicacion">
@@ -690,7 +690,7 @@ function renderDetail(item) {
   // ── Sección 3: Seguimiento del hallazgo ───────────────────────────────────
   const ownerDisplay = item.owner_remediacion
     ? item.owner_remediacion
-    : `<span class="badge-owner-unset">⚠ Sin responsable asignado — hallazgo sin ownership formal</span>`;
+    : `<span class="badge-owner-unset">⚠ Sin responsable asignado — hallazgo sin responsable formal</span>`;
 
   const agingDisplay = renderAgingBadge(item);
   const agingNote = item.agingStatus === 'vencido'
@@ -720,7 +720,7 @@ function renderDetail(item) {
     return html;
   })();
 
-  // Lifecycle del hallazgo: timeline visual
+  // Ciclo de vida del hallazgo: timeline visual
   const diasAbierto = calcAntiguedad(item.fecha_apertura_hallazgo);
   const estaAbierto = !item.fecha_cierre_hallazgo;
   const lifecycleHtml = `
@@ -1009,7 +1009,7 @@ function openEditPanel(id) {
             </select>
           </label>
           <label class="edit-field-group">
-            <span>Owner remediación</span>
+            <span>Responsable de remediación</span>
             <input type="text" id="edit-owner-${id}" class="edit-input"
               value="${item.owner_remediacion || ''}" placeholder="Sin asignar" />
           </label>

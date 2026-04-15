@@ -11,7 +11,7 @@
 Cyber Audit Mini Lab no es la sede doctrinal del método, no es la app operativa principal y no es una capa pedagógica. Su rol es más acotado y más valioso:
 
 - mostrar hallazgos de auditoría en una interfaz visual clara
-- hacer visible prioridad, aging, owner, decisión y lifecycle
+- hacer visible prioridad, aging, responsable, decisión y ciclo de vida
 - ofrecer una demo ejecutiva comprensible del enfoque LAALT
 - servir como tablero de exposición visual sobre un dataset controlado
 
@@ -33,7 +33,7 @@ Las matrices de auditoría de ciberseguridad típicas responden a una pregunta: 
 
 La diferencia no es semántica. Un control con diseño 4/5 y operación 1/5 tiene un riesgo real completamente diferente al que el scoring técnico sugiere. Un deadline vencido sin escalamiento cambia la exposición de la organización, independientemente de cuánto mida la efectividad del control.
 
-Cyber Audit Mini Lab modela esa realidad como capa visual: el riesgo residual incluye penalizaciones explícitas por seguimiento deficiente, el lifecycle del hallazgo es un ciudadano de primera clase en el modelo de datos, y el panel de detalle está ordenado por prioridad de decisión, no de información.
+Cyber Audit Mini Lab modela esa realidad como capa visual: el riesgo residual incluye penalizaciones explícitas por seguimiento deficiente, el ciclo de vida del hallazgo es un ciudadano de primera clase en el modelo de datos, y el panel de detalle está ordenado por prioridad de decisión, no de información.
 
 ---
 
@@ -51,7 +51,7 @@ Cyber Audit Mini Lab modela esa realidad como capa visual: el riesgo residual in
 - La columna **Riesgo R** mostrando `13 → 15` con `+20%` cuando el hallazgo tiene penalizaciones de gestión (vencido + abierto)
 - El control C10 (Forensics) con fila en rojo intenso, badge "Vencido 7d", risk flag "⚡ Crítico vencido"
 - El panel de detalle de C06 mostrando el bloque morado de justificación de aceptación con el aprobador "Director de Compras"
-- El lifecycle timeline de C08 con el dot de Apertura en azul y los de Verificación y Cierre en gris (hallazgo sin avance)
+- El timeline de ciclo de vida de C08 con el dot de Apertura en azul y los de Verificación y Cierre en gris (hallazgo sin avance)
 - Vista mobile: cards con aging badges visibles sin scroll
 
 ---
@@ -66,8 +66,8 @@ La triage bar (si hay flags activos) muestra inmediatamente qué requiere acció
 
 **Paso 3 — Investigar el hallazgo**
 Clic en cualquier fila abre el panel de detalle ordenado por decisión:
-brecha → seguimiento visual del hallazgo (owner, deadline, decisión, lifecycle) → evidencia → impacto → legal → remediación.
-La explicación del riesgo residual aparece junto al scoring, no al final. El lifecycle timeline muestra visualmente en qué etapa está el hallazgo y cuántos días lleva abierto.
+brecha → seguimiento visual del hallazgo (responsable, deadline, decisión, ciclo de vida) → evidencia → impacto → legal → remediación.
+La explicación del riesgo residual aparece junto al scoring, no al final. El timeline de ciclo de vida muestra visualmente en qué etapa está el hallazgo y cuántos días lleva abierto.
 
 **Paso 4 — Tomar lectura**
 La sección de seguimiento visual del hallazgo concentra todo lo necesario para entender qué requiere atención: quién figura como responsable, cuándo vence, qué se decidió, si la aceptación tiene aprobador formal, y por qué el residual es el que es.
@@ -80,7 +80,7 @@ La sección de seguimiento visual del hallazgo concentra todo lo necesario para 
 |---|---|
 | ¿Qué hallazgo escalo hoy? | Triage bar + columna Aging |
 | ¿El riesgo residual refleja la gestión real? | Columna `13 → 15` + badge `+20%` |
-| ¿Cuánto lleva abierto este hallazgo? | Lifecycle timeline + "Abierto hace N días" |
+| ¿Cuánto lleva abierto este hallazgo? | Timeline de ciclo de vida + "Abierto hace N días" |
 | ¿Quién figura como responsable y cuándo vence? | Sección Seguimiento visual del hallazgo |
 | ¿La aceptación del riesgo tiene respaldo? | Badge "⚠ Aceptado sin aprobador" + justificación |
 | ¿Qué evidencia tengo vs qué necesito? | Sección Evidencia requerida vs observada |
@@ -106,7 +106,7 @@ Cada control tiene 4 sub-objetos. El más visible en el tablero es `remediation_
 ```json
 {
   "estado_hallazgo":             "Abierto | En curso | Mitigado | Aceptado | Cerrado",
-  "owner_remediacion":           "Nombre / área (null → flag ◎ Sin owner)",
+  "owner_remediacion":           "Nombre / área (null → flag ◎ Sin responsable)",
   "fecha_compromiso":            "YYYY-MM-DD",
   "fecha_apertura_hallazgo":     "YYYY-MM-DD",
   "fecha_cierre_hallazgo":       null,
@@ -130,7 +130,7 @@ Cada control tiene 4 sub-objetos. El más visible en el tablero es `remediation_
 
 **Penalizaciones de seguimiento:**
 - Deadline vencido → +15%: remediación demorada amplifica la exposición real
-- Sin owner → +10%: sin responsable no hay remediación posible
+- Sin responsable → +10%: sin responsable no hay remediación posible
 - Hallazgo Abierto → +5%: aún no se inició ninguna acción correctiva
 
 **D · O (Diseño · Operación):** Los dos ejes del scoring. D = está bien concebido. O = se ejecuta en la práctica. Un D=4 / O=1 es un programa bien documentado que nadie ejecuta — el caso C04 del dataset.
@@ -146,7 +146,7 @@ Cada control tiene 4 sub-objetos. El más visible en el tablero es `remediation_
 
 **Risk Flags:** Alertas compuestas que combinan condiciones:
 - ⚡ `critico-vencido`: inherente ≥ 12 + deadline vencido → escalar hoy
-- ◎ `sin-owner`: owner nulo → sin governance formal
+- ◎ `sin-owner`: responsable nulo → sin governance formal
 - ▲ `hallazgo-critico-abierto`: Abierto + impacto Alto/Crítico → sin acción
 - ⚠ `aceptado-sin-aprobador`: decisión sin respaldo formal → auditoría observa
 
@@ -158,7 +158,7 @@ Cada control tiene 4 sub-objetos. El más visible en el tablero es `remediation_
 |---------|--------------------------|----------------|
 | C04 | D=4 / O=1: programa documentado, ejecutado al 25% | Dots D=●●●●○ / O=●○○○○ |
 | C06 | Aceptado sin análisis cuantitativo — aprobador: Director de Compras | Badge morado + bloque de justificación |
-| C08 | Owner null — hallazgo abierto crítico sin responsable | ◎ Sin owner + badge naranja |
+| C08 | Responsable null — hallazgo abierto crítico sin responsable | ◎ Sin responsable + badge naranja |
 | C10 | Deadline vencido + hallazgo Abierto → R ajustado al inherente | ⚡ Crítico vencido + `13 → 15` |
 | C11 | Deadline próximo (≤7 días) | Badge naranja "2d" |
 
@@ -170,20 +170,20 @@ Cada control tiene 4 sub-objetos. El más visible en el tablero es `remediation_
 
 **Cómo resuelve este flujo la herramienta:**
 
-1. Carga del dataset → la triage bar muestra instantáneamente: 1 hallazgo crítico vencido, 1 sin owner, 4 críticos abiertos.
+1. Carga del dataset → la triage bar muestra instantáneamente: 1 hallazgo crítico vencido, 1 sin responsable, 4 críticos abiertos.
 2. `filterAging = Vencido` → C10 (Forensics) aparece solo, con R=15 (equivalente al inherente), vencido hace 7 días, sin avance.
-3. Panel de detalle C10 → la sección de Seguimiento muestra que el plan de remediación existe pero el hallazgo sigue Abierto, el lifecycle muestra apertura hace 342 días, y la explicación del residual confirma: "Deadline vencido sin avance. El último incidente destruyó evidencia forense irrecuperable."
+3. Panel de detalle C10 → la sección de Seguimiento muestra que el plan de remediación existe pero el hallazgo sigue Abierto, el ciclo de vida muestra apertura hace 342 días, y la explicación del residual confirma: "Deadline vencido sin avance. El último incidente destruyó evidencia forense irrecuperable."
 4. `filterDecision = Aceptado` → C06 (Supply Chain) aparece con flag ⚠. El auditor verifica que hay aprobador ("Director de Compras") pero la justificación tiene la nota del auditor marcada explícitamente: "la aceptación carece de sustento técnico".
 5. El auditor documenta: C10 requiere escalamiento a Directorio esta semana. C06 requiere revisión de la calidad de la aceptación antes de la próxima renovación contractual.
 
-**Valor para el regulador:** La herramienta muestra no solo que se detectaron riesgos, sino cómo se gestionaron (o no). Un deadline vencido sin escalamiento, un owner faltante, o una aceptación sin aprobador son hallazgos de governance en sí mismos.
+**Valor para el regulador:** La herramienta muestra no solo que se detectaron riesgos, sino cómo se siguieron (o no). Un deadline vencido sin escalamiento, un responsable faltante, o una aceptación sin aprobador son hallazgos de governance en sí mismos.
 
 ---
 
 ## Decisiones de diseño
 
 **¿Por qué penalizar el residual por seguimiento?**
-Un control con efectividad 4/5 no reduce el riesgo si el hallazgo lleva 300 días sin owner y el deadline venció hace un mes. El scoring técnico sin la capa de seguimiento visible da una falsa sensación de control. La penalización es deliberadamente simple y explicable — condición necesaria para presentarla ante un Directorio o regulador.
+Un control con efectividad 4/5 no reduce el riesgo si el hallazgo lleva 300 días sin responsable y el deadline venció hace un mes. El scoring técnico sin la capa de seguimiento visible da una falsa sensación de control. La penalización es deliberadamente simple y explicable — condición necesaria para presentarla ante un Directorio o regulador.
 
 **¿Por qué JS vanilla?**
 El objetivo es demostrar criterio, no dominio de un framework. El stack vanilla hace el código completamente auditable: cualquier persona con conocimientos básicos de JS puede entender qué hace cada función. Sin build steps, sin dependencias, sin npm vulnerabilities que explicar.
@@ -234,7 +234,7 @@ cyber-audit-mini-lab/
 ├── script.js               — Lógica: scoring, penalizaciones, flags, triage, rendering
 ├── styles.css              — Design system: dark theme, badges, timeline, responsive
 ├── data/
-│   └── audit_matrix.json   — 11 controles · 4 sub-objetos · lifecycle completo
+│   └── audit_matrix.json   — 11 controles · 4 sub-objetos · ciclo de vida completo
 ├── crear-issues.sh         — Script para crear issues del roadmap (requiere gh CLI)
 ├── CHANGELOG.md            — Historial de versiones v1.0 → v1.4
 └── README.md               — Este archivo
@@ -250,7 +250,7 @@ cyber-audit-mini-lab/
 | Datos | JSON · 4 sub-objetos por control | Versionable en Git, reemplazable por API |
 | Tipografía | JetBrains Mono + Syne | Monospace para datos, display para títulos |
 | Hosting | GitHub Pages | HTTPS automático, cero infraestructura |
-| Versión | v1.4 | Triage bar, delta residual, lifecycle timeline |
+| Versión | v1.4 | Triage bar, delta residual, timeline de ciclo de vida |
 
 ---
 
@@ -258,7 +258,7 @@ cyber-audit-mini-lab/
 
 ## Lugar en el ecosistema LAALT
 
-Cyber Audit Mini Lab es la **capa visual** del ecosistema LAALT. Su función es exponer hallazgos, prioridad, lifecycle y seguimiento visible de forma clara, ejecutiva y comprensible.
+Cyber Audit Mini Lab es la **capa visual** del ecosistema LAALT. Su función es exponer hallazgos, prioridad, ciclo de vida y seguimiento visible de forma clara, ejecutiva y comprensible.
 
 No reemplaza:
 - la doctrina del `cyber-audit-core-lab`
