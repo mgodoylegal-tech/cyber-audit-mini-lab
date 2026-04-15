@@ -1,8 +1,29 @@
 # Cyber Audit Mini Lab
 
-> Herramienta de gestión de hallazgos de auditoría de ciberseguridad — NIST CSF · GRC · Legal-Tech
+> Capa visual y demo de hallazgos del ecosistema LAALT
 
 **Live demo →** [mgodoylegal-tech.github.io/cyber-audit-mini-lab](https://mgodoylegal-tech.github.io/cyber-audit-mini-lab)
+
+---
+
+## Rol correcto dentro del ecosistema
+
+Cyber Audit Mini Lab no es la sede doctrinal del método, no es la app operativa principal y no es una capa pedagógica. Su rol es más acotado y más valioso:
+
+- mostrar hallazgos de auditoría en una interfaz visual clara
+- hacer visible prioridad, aging, owner, decisión y lifecycle
+- ofrecer una demo ejecutiva comprensible del enfoque LAALT
+- servir como tablero de exposición visual sobre un dataset controlado
+
+En el ecosistema:
+
+| Proyecto | Rol |
+|---|---|
+| `cyber-audit-core-lab` | Método, doctrina, framework y capa operativa principal |
+| `auditor-guide` | Estudio, entrenamiento y razonamiento guiado |
+| `cyber-audit-mini-lab` | Visualización / demo / tablero de hallazgos |
+
+El mini-lab toma lenguaje, lógica de scoring y lectura de hallazgos del LAALT, pero no reemplaza al `core-lab` ni compite con `auditor-guide`.
 
 ---
 
@@ -12,7 +33,7 @@ Las matrices de auditoría de ciberseguridad típicas responden a una pregunta: 
 
 La diferencia no es semántica. Un control con diseño 4/5 y operación 1/5 tiene un riesgo real completamente diferente al que el scoring técnico sugiere. Un deadline vencido sin escalamiento cambia la exposición de la organización, independientemente de cuánto mida la efectividad del control.
 
-Cyber Audit Mini Lab modela esa realidad: el riesgo residual incluye penalizaciones explícitas por gestión deficiente, el lifecycle del hallazgo es un ciudadano de primera clase en el modelo de datos, y el panel de detalle está ordenado por prioridad de decisión, no de información.
+Cyber Audit Mini Lab modela esa realidad como capa visual: el riesgo residual incluye penalizaciones explícitas por seguimiento deficiente, el lifecycle del hallazgo es un ciudadano de primera clase en el modelo de datos, y el panel de detalle está ordenado por prioridad de decisión, no de información.
 
 ---
 
@@ -45,11 +66,11 @@ La triage bar (si hay flags activos) muestra inmediatamente qué requiere acció
 
 **Paso 3 — Investigar el hallazgo**
 Clic en cualquier fila abre el panel de detalle ordenado por decisión:
-brecha → seguimiento del hallazgo (owner, deadline, decisión, lifecycle) → evidencia → impacto → legal → remediación.
+brecha → seguimiento visual del hallazgo (owner, deadline, decisión, lifecycle) → evidencia → impacto → legal → remediación.
 La explicación del riesgo residual aparece junto al scoring, no al final. El lifecycle timeline muestra visualmente en qué etapa está el hallazgo y cuántos días lleva abierto.
 
-**Paso 4 — Actuar**
-La sección de Seguimiento del hallazgo concentra todo lo necesario para tomar una decisión en ese mismo momento: quién es el responsable, cuándo vence, qué se decidió, si la aceptación tiene aprobador formal, y por qué el residual es el que es.
+**Paso 4 — Tomar lectura**
+La sección de seguimiento visual del hallazgo concentra todo lo necesario para entender qué requiere atención: quién figura como responsable, cuándo vence, qué se decidió, si la aceptación tiene aprobador formal, y por qué el residual es el que es.
 
 ---
 
@@ -60,7 +81,7 @@ La sección de Seguimiento del hallazgo concentra todo lo necesario para tomar u
 | ¿Qué hallazgo escalo hoy? | Triage bar + columna Aging |
 | ¿El riesgo residual refleja la gestión real? | Columna `13 → 15` + badge `+20%` |
 | ¿Cuánto lleva abierto este hallazgo? | Lifecycle timeline + "Abierto hace N días" |
-| ¿Quién es el responsable y cuándo vence? | Sección Seguimiento del hallazgo |
+| ¿Quién figura como responsable y cuándo vence? | Sección Seguimiento visual del hallazgo |
 | ¿La aceptación del riesgo tiene respaldo? | Badge "⚠ Aceptado sin aprobador" + justificación |
 | ¿Qué evidencia tengo vs qué necesito? | Sección Evidencia requerida vs observada |
 | ¿Cuál es la consecuencia legal si no se cierra? | Sección Riesgo legal / Compliance |
@@ -68,19 +89,19 @@ La sección de Seguimiento del hallazgo concentra todo lo necesario para tomar u
 
 ---
 
-## Doble capa: análisis + gestión
+## Doble capa: análisis + seguimiento visible
 
 **Capa 1 — Análisis (dashboard)**
 Los 5 stat cards dan una lectura ejecutiva inmediata: controles en revisión, impacto crítico, hallazgos activos, estado de deadlines y efectividad promedio. Es la capa de comprensión: ¿qué tan sano está el programa de controles?
 
-**Capa 2 — Gestión (operativo)**
-La triage bar, la tabla, los filtros y el panel de detalle son la capa de acción: ¿qué hago ahora? ¿quién es el dueño? ¿cuándo vence? ¿el riesgo está bien gobernado? En una auditoría real, el análisis se hace una vez; la gestión se hace todos los días.
+**Capa 2 — Seguimiento visible (demo)**
+La triage bar, la tabla, los filtros y el panel de detalle son la capa de seguimiento visual: ¿qué requiere atención hoy? ¿quién figura como responsable? ¿qué deadline aparece comprometido? ¿el hallazgo está gobernado o deriva? En una auditoría real, la operación vive en el `core-lab`; acá se visualiza esa lógica sobre un dataset demo.
 
 ---
 
 ## Modelo de datos (v1.4)
 
-Cada control tiene 4 sub-objetos. El más operativo es `remediation_tracking`:
+Cada control tiene 4 sub-objetos. El más visible en el tablero es `remediation_tracking`:
 
 ```json
 {
@@ -99,15 +120,15 @@ Cada control tiene 4 sub-objetos. El más operativo es `remediation_tracking`:
 
 ---
 
-## Glosario operativo
+## Glosario visual
 
 **Riesgo inherente (I):** `Impacto (1–5) × Probabilidad (1–5)`. El riesgo sin ningún control. Valor máximo: 25.
 
 **Riesgo residual base (R_base):** `Inherente × (1 − (Efectividad/5 × 0.7))`. El coeficiente 0.7 representa que ningún control elimina el riesgo en su totalidad.
 
-**Riesgo residual ajustado (R):** `R_base × (1 + penalizaciones)`. Capped al inherente. Refleja la calidad de la gestión, no solo del control.
+**Riesgo residual ajustado (R):** `R_base × (1 + penalizaciones)`. Capped al inherente. Refleja la calidad del seguimiento visible, no solo del control.
 
-**Penalizaciones de gestión:**
+**Penalizaciones de seguimiento:**
 - Deadline vencido → +15%: remediación demorada amplifica la exposición real
 - Sin owner → +10%: sin responsable no hay remediación posible
 - Hallazgo Abierto → +5%: aún no se inició ninguna acción correctiva
@@ -161,8 +182,8 @@ Cada control tiene 4 sub-objetos. El más operativo es `remediation_tracking`:
 
 ## Decisiones de diseño
 
-**¿Por qué penalizar el residual por gestión?**
-Un control con efectividad 4/5 no reduce el riesgo si el hallazgo lleva 300 días sin owner y el deadline venció hace un mes. El scoring técnico sin la capa de gestión da una falsa sensación de control. La penalización es deliberadamente simple y explicable — condición necesaria para presentarla ante un Directorio o regulador.
+**¿Por qué penalizar el residual por seguimiento?**
+Un control con efectividad 4/5 no reduce el riesgo si el hallazgo lleva 300 días sin owner y el deadline venció hace un mes. El scoring técnico sin la capa de seguimiento visible da una falsa sensación de control. La penalización es deliberadamente simple y explicable — condición necesaria para presentarla ante un Directorio o regulador.
 
 **¿Por qué JS vanilla?**
 El objetivo es demostrar criterio, no dominio de un framework. El stack vanilla hace el código completamente auditable: cualquier persona con conocimientos básicos de JS puede entender qué hace cada función. Sin build steps, sin dependencias, sin npm vulnerabilities que explicar.
@@ -174,7 +195,7 @@ El JSON actúa como single source of truth versionable en Git. La estructura de 
 GitHub Pages permite publicar sin infraestructura. El foco está en la capa de análisis y presentación. Un backend cambiaría el prototipo en un producto — diferente scope, diferente propósito.
 
 **¿Por qué el panel de detalle está ordenado por decisión y no por información?**
-En campo, la secuencia natural es: ¿cuál es el riesgo? → ¿cuál es la brecha? → ¿quién es responsable y cuándo vence? → ¿qué evidencia hay? La sección de Seguimiento del hallazgo aparece tercera (no última) porque es la acción inmediata.
+En campo, la secuencia natural es: ¿cuál es el riesgo? → ¿cuál es la brecha? → ¿quién figura como responsable y cuándo vence? → ¿qué evidencia hay? La sección de seguimiento visual del hallazgo aparece tercera (no última) porque concentra la lectura de atención inmediata.
 
 ---
 
@@ -184,24 +205,24 @@ Estas limitaciones son intencionales, no deuda técnica:
 
 | Limitación | Razón |
 |-----------|-------|
-| Sin persistencia (los cambios no se guardan) | Mantener stack estático, sin backend |
-| Sin edición inline desde la UI | Requeriría lógica de validación + export JSON |
-| Sin exportación de reportes | Requiere jsPDF o capa de rendering |
-| Sin autenticación ni multiusuario | Fuera del alcance del portfolio |
+| Edición y trail solo locales | Sirven para simular escenarios en demo, no para operar una auditoría real |
+| Sin persistencia compartida | Mantener stack estático y evitar que compita con el core-lab |
+| Sin exportación de reportes formales | El foco está en visualización, no en reporting operativo |
+| Sin autenticación ni multiusuario | Fuera del alcance de esta capa visual |
 | Dataset de 11 controles fijo | Demo de concepto, no dataset de producción |
-| No es herramienta de auditoría certificada | Prototipo de portfolio, no reemplazo de GRC enterprise |
+| No es herramienta doctrinal ni operativa principal | El método y la operación principal viven en el `core-lab` |
 
 ---
 
-## Roadmap
+## Roadmap prudente
 
 | Ítem | Descripción |
 |------|------------|
-| Edición inline | Cambiar estado/owner/deadline desde la tabla; recalcular scoring en tiempo real; exportar JSON modificado |
-| Exportación PDF | Informe ejecutivo con top hallazgos, triage, lifecycle — generado client-side con jsPDF |
-| Multi-framework | Soporte ISO 27001 y COBIT 2019 sin cambiar arquitectura; nuevo campo `referencia_framework` |
-| Audit trail | Historial de cambios por hallazgo en localStorage; exportable en CSV |
-| Backend mínimo | Node.js + SQLite; 4 endpoints; persistencia real; JWT con roles auditor/owner/readonly |
+| Refinar framing LAALT | Hacer más explícita la relación con `core-lab` y `auditor-guide` |
+| Mejorar UX visual | Ajustar lectura mobile, badges, densidad visual y claridad de triage |
+| Dataset alternativo | Sumar una segunda muestra de hallazgos sin cambiar el stack |
+| Exportación visual simple | Snapshot descargable o CSV liviano, sin convertirlo en app operativa |
+| Terminología | Reducir framing GRC-genérico y reforzar lectura de hallazgos en lenguaje LAALT |
 
 ---
 
@@ -237,15 +258,14 @@ cyber-audit-mini-lab/
 
 ## Lugar en el ecosistema LAALT
 
-Cyber Audit Mini Lab es la **capa de visualizacion** del ecosistema LAALT (Laboratorio de Auditoria Legal-Tecnica). Su funcion es mostrar hallazgos de auditoria en una interfaz visual clara y profesional.
+Cyber Audit Mini Lab es la **capa visual** del ecosistema LAALT. Su función es exponer hallazgos, prioridad, lifecycle y seguimiento visible de forma clara, ejecutiva y comprensible.
 
-| Proyecto | Funcion |
-|----------|---------|
-| **cyber-audit-core-lab** | Metodo / doctrina / framework / app operativa |
-| **Auditor Guide** | Aprendizaje / razonamiento guiado / entrenamiento |
-| **Cyber Audit Mini Lab** (este proyecto) | Visualizacion / demo / tablero de hallazgos |
+No reemplaza:
+- la doctrina del `cyber-audit-core-lab`
+- la operación principal del `cyber-audit-core-lab`
+- la capa pedagógica de `auditor-guide`
 
-El mini-lab consume terminologia, taxonomia y logica de scoring del `core-lab`. En futuras versiones, la alineacion con el metodo LAALT se profundizara (Fase 3 del MASTERPLAN del ecosistema).
+Sí complementa al ecosistema mostrando cómo se verían los findings en una superficie visual de lectura rápida.
 
 ---
 

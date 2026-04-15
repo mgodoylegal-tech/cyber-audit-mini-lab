@@ -1,6 +1,6 @@
 // ─── Cyber Audit Mini Lab · v1.4 ───────────────────────────────────────────
-// Stack: HTML + CSS + JS vanilla. Sin frameworks. Sin backend.
-// Autor: Matías Godoy · Legal-Tech / GRC / Ciberseguridad
+// Capa visual/demo del ecosistema LAALT.
+// Stack: HTML + CSS + JS vanilla. Sin backend. Sin capa operativa persistente.
 
 let fullData = [], filteredData = [], selectedId = null;
 let sortField = null, sortDir = -1;
@@ -305,7 +305,7 @@ function renderRiskFlags(item) {
 function renderPenalizacionBadge(item) {
   if (!item.penalizacion_gestion) return '';
   const pct = Math.round(item.penalizacion_gestion * 100);
-  return `<span class="badge-penalizacion" title="Penalización por gestión deficiente: +${pct}%">+${pct}%</span>`;
+  return `<span class="badge-penalizacion" title="Penalización por seguimiento deficiente: +${pct}%">+${pct}%</span>`;
 }
 
 // ─── HELPER: CÁLCULO DE ANTIGÜEDAD ───────────────────────────────────────────
@@ -478,7 +478,7 @@ function renderSummary(data) {
     <div class="stat-card">
       <span class="stat-label">Controles en revisión</span>
       <div class="stat-value">${total}</div>
-      <div class="stat-sub">de ${fullData.length} totales · ${dominios} dominios NIST</div>
+      <div class="stat-sub">de ${fullData.length} totales · ${dominios} dominios del dataset demo</div>
     </div>
     <div class="stat-card card-alert">
       <span class="stat-label">Impacto Crítico</span>
@@ -498,7 +498,7 @@ function renderSummary(data) {
     <div class="stat-card">
       <span class="stat-label">Efectividad promedio</span>
       <div class="stat-value">${avgEf}</div>
-      <div class="stat-sub">scoring ponderado D·O / escala 1–5</div>
+      <div class="stat-sub">scoring visual ponderado D·O / escala 1–5</div>
       <div class="madurez-bar"><div class="madurez-fill" style="width:${efPct}%"></div></div>
     </div>`;
 
@@ -564,7 +564,7 @@ function renderTable(data) {
       <td class="td-owner">${ownerHtml}</td>
       <td class="td-deadline">${formatFecha(item.fecha_compromiso)}</td>
       <td class="td-aging">${renderAgingBadge(item)}</td>
-      <td class="td-edit"><button class="btn-edit-row" title="Editar estado, owner y deadline">✏</button></td>`;
+      <td class="td-edit"><button class="btn-edit-row" title="Simular cambios locales sobre el dataset demo">✏</button></td>`;
 
     tr.querySelector('.btn-edit-row').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -620,11 +620,11 @@ function renderCards(data) {
       ${flagsHtml ? `<div class="audit-card-flags">${flagsHtml}</div>` : ''}
       <div class="audit-card-footer">
         <span class="card-meta">
-          <span class="card-owner-label">Owner: ${ownerHtml}</span>
+          <span class="card-owner-label">Responsable: ${ownerHtml}</span>
           <span class="card-deadline-label">Deadline: ${formatFecha(item.fecha_compromiso)}</span>
         </span>
         <span class="riesgo-num riesgo-${rr.cls}" title="Riesgo residual">${item.riesgo_residual}</span>
-        <button class="btn-ver-detalle">Ver detalle</button>
+        <button class="btn-ver-detalle">Abrir lectura</button>
       </div>`;
 
     card.querySelector('.btn-ver-detalle').addEventListener('click', () => {
@@ -805,12 +805,12 @@ function renderDetail(item) {
       </div>
     </div>
 
-    <!-- 3. SEGUIMIENTO DEL HALLAZGO (operativo — decisión) -->
+    <!-- 3. SEGUIMIENTO VISUAL DEL HALLAZGO -->
     <div class="detail-cell detail-seguimiento-block span-full">
-      <h4>📋 Seguimiento del hallazgo</h4>
+      <h4>📋 Seguimiento visual del hallazgo</h4>
       <div class="seguimiento-grid">
         <div class="gestion-row">
-          <span class="gestion-label">Owner:</span>
+          <span class="gestion-label">Responsable:</span>
           <span>${ownerDisplay}</span>
         </div>
         <div class="gestion-row">
@@ -920,7 +920,7 @@ function clearDetail() {
   panel.classList.remove('has-content');
   hint.textContent = 'Seleccioná un control para ver el análisis completo';
   cont.className = 'detail-empty';
-  cont.innerHTML = '<div class="detail-placeholder"><span>↑</span><p>Clic en cualquier fila o "Ver detalle"</p></div>';
+  cont.innerHTML = '<div class="detail-placeholder"><span>↑</span><p>Clic en cualquier fila o "Abrir lectura"</p></div>';
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -1073,7 +1073,7 @@ function saveEdit(id) {
   applyFilters();
   if (selectedId === id) renderDetail(updated);
   updateTrailBadge();
-  showToast(`C${String(id).padStart(2,'0')} guardado`);
+  showToast(`C${String(id).padStart(2,'0')} actualizado en modo demo`);
 }
 
 // ─── v1.5: EXPORT JSON ───────────────────────────────────────────────────────
@@ -1123,7 +1123,7 @@ function exportJSON() {
   a.download = `audit_matrix_${new Date().toISOString().split('T')[0]}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast('JSON exportado');
+  showToast('Snapshot demo exportado');
 }
 
 // ─── v1.5: RESET CAMBIOS ─────────────────────────────────────────────────────
@@ -1163,12 +1163,12 @@ function renderTrailPanel() {
   if (!panel) return;
   const trail = getTrail();
   if (!trail.length) {
-    panel.innerHTML = '<p class="trail-empty">Sin cambios registrados todavía.</p>';
+    panel.innerHTML = '<p class="trail-empty">Sin simulaciones locales registradas todavía.</p>';
     return;
   }
   panel.innerHTML = `
     <div class="trail-header">
-      <span>Historial de cambios (${trail.length})</span>
+      <span>Historial local de simulación (${trail.length})</span>
       <button class="btn-reset-changes" onclick="resetChanges()">↺ Resetear todo</button>
     </div>
     <div class="trail-list">

@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#070b14" />
-  <title>Cyber Audit Mini Lab — Ecosistema LAALT</title>
-  <meta name="description" content="Herramienta de gestion de hallazgos de auditoria de ciberseguridad. Triage, scoring con penalizaciones de gestion, lifecycle de hallazgos. Ecosistema LAALT." />
+  <title>Cyber Audit Mini Lab — Capa visual del ecosistema LAALT</title>
+  <meta name="description" content="Tablero visual y demo de hallazgos del ecosistema LAALT. Triage, scoring visual, lifecycle, prioridad y seguimiento visible sin reemplazar el core-lab." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
@@ -16,16 +16,20 @@
       <div class="brand">
         <span class="brand-tag">[ LAB · v1.4 ]</span>
         <h1>Cyber Audit<br><em>Mini Lab</em></h1>
-        <p class="brand-desc">Herramienta de gestión de hallazgos · 11 controles en los 5 dominios NIST CSF · Identificar → Proteger → Detectar → Responder → Recuperar</p>
+        <p class="brand-desc">Capa visual del ecosistema LAALT · demo de hallazgos, prioridad, lifecycle y seguimiento visible sobre un dataset de ejemplo</p>
       </div>
       <div class="header-meta">
         <div class="meta-item">
-          <span class="meta-label">Framework</span>
-          <span class="meta-value">NIST CSF</span>
+          <span class="meta-label">Rol</span>
+          <span class="meta-value">Tablero visual / demo</span>
         </div>
         <div class="meta-item">
-          <span class="meta-label">Enfoque</span>
-          <span class="meta-value">GRC · Legal-Tech</span>
+          <span class="meta-label">Fuente</span>
+          <span class="meta-value">Lenguaje LAALT</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Dataset</span>
+          <span class="meta-value">11 controles · dominio ejemplo</span>
         </div>
         <div class="meta-item">
           <span class="meta-label">Ecosistema</span>
@@ -40,6 +44,28 @@
   </header>
 
   <main class="container">
+    <section class="ecosystem-strip" aria-label="Posicionamiento del mini-lab en el ecosistema">
+      <div class="ecosystem-copy">
+        <span class="ecosystem-kicker">Capa visual del ecosistema</span>
+        <h2>Este mini-lab no reemplaza el método ni la capa de estudio.</h2>
+        <p>Muestra hallazgos, prioridad, scoring visual y seguimiento de forma clara. El método y la operación viven en <strong>cyber-audit-core-lab</strong>; el aprendizaje y entrenamiento viven en <strong>auditor-guide</strong>.</p>
+      </div>
+      <div class="ecosystem-grid">
+        <div class="ecosystem-card">
+          <span class="ecosystem-label">Core-lab</span>
+          <p>Fuente doctrinal y capa operativa principal.</p>
+        </div>
+        <div class="ecosystem-card">
+          <span class="ecosystem-label">Auditor Guide</span>
+          <p>Estudio, entrenamiento y construcción de criterio.</p>
+        </div>
+        <div class="ecosystem-card active">
+          <span class="ecosystem-label">Mini-lab</span>
+          <p>Visualización demo de hallazgos y seguimiento visible.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="summary" id="summary"></section>
 
     <!-- TRIAGE BAR: visible solo cuando hay flags activos → situación hoy -->
@@ -108,9 +134,9 @@
         <button id="btnReset" class="btn-reset">Limpiar</button>
       </div>
       <div class="filters-actions">
-        <button class="btn-export" onclick="exportJSON()" title="Descargar audit_matrix.json con los cambios aplicados">↓ Exportar JSON</button>
+        <button class="btn-export" onclick="exportJSON()" title="Descargar un snapshot local del dataset demo con los cambios simulados">↓ Exportar snapshot demo</button>
         <button class="btn-trail" onclick="toggleTrailPanel()">
-          ⏱ Cambios <span id="trailBadge" class="trail-badge" style="display:none"></span>
+          ⏱ Simulación local <span id="trailBadge" class="trail-badge" style="display:none"></span>
         </button>
       </div>
       <div class="filter-count" id="filterCount"></div>
@@ -154,15 +180,15 @@
       <div id="detailContent" class="detail-empty">
         <div class="detail-placeholder">
           <span>↑</span>
-          <p>Clic en cualquier fila o "Ver detalle"</p>
+          <p>Clic en cualquier fila o "Abrir lectura"</p>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <span>Cyber Audit Mini Lab v1.4 · Prototipo de portfolio — <a href="https://github.com/mgodoylegal-tech/cyber-audit-mini-lab" target="_blank">mgodoylegal-tech</a></span>
-    <span>GRC · Legal-Tech · Fraude Bancario Digital · NIST CSF</span>
+    <span>Cyber Audit Mini Lab v1.4 · Capa visual/demo del ecosistema LAALT — <a href="https://github.com/mgodoylegal-tech/cyber-audit-mini-lab" target="_blank">mgodoylegal-tech</a></span>
+    <span>Dataset demo de hallazgos · Visualización ejecutiva · Sin backend ni operación persistente</span>
   </footer>
   <script src="script.js"></script>
 </body>
