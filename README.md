@@ -52,7 +52,7 @@ Este mini-lab responde una pregunta mas util para gestion y auditoria:
 
 **Que hago con este hallazgo hoy?**
 
-Un control puede estar razonablemente bien diseñado y aun asi sostener un riesgo alto si:
+Un control puede estar razonablemente bien disenado y aun asi sostener un riesgo alto si:
 
 - el hallazgo sigue abierto
 - el deadline esta vencido
@@ -126,26 +126,15 @@ El detalle esta ordenado para ayudar a decidir:
 
 ---
 
-## Capturas recomendadas
+## Capturas
 
-Agregar en `docs/`:
+### Vista general
 
-- `screenshot-desktop.png`
-- `screenshot-detail.png`
+![Vista general del Mini Lab](docs/screenshot-overview.png)
 
-Idealmente, las capturas deberian mostrar:
+### Detalle del hallazgo
 
-- triage activo
-- el caso demo de MFA
-- riesgo residual ajustado visible
-- responsable, deadline y decision en el panel
-
-Ejemplo de insercion:
-
-```markdown
-![Vista general desktop](docs/screenshot-desktop.png)
-![Panel de detalle](docs/screenshot-detail.png)
-```
+![Detalle del hallazgo](docs/screenshot-detail.png)
 
 ---
 
