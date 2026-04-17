@@ -52,7 +52,7 @@ Este mini-lab responde una pregunta mas util para gestion y auditoria:
 
 **Que hago con este hallazgo hoy?**
 
-Un control puede estar razonablemente bien diseniado y aun asi sostener un riesgo alto si:
+Un control puede estar razonablemente bien diseñado y aun asi sostener un riesgo alto si:
 
 - el hallazgo sigue abierto
 - el deadline esta vencido
