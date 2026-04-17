@@ -1,4 +1,4 @@
-// ─── Cyber Audit Mini Lab · v1.4 ───────────────────────────────────────────
+﻿// â”€â”€â”€ Cyber Audit Mini Lab Â· v1.4 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Capa visual/demo del ecosistema LAALT.
 // Stack: HTML + CSS + JS vanilla. Sin backend. Sin capa operativa persistente.
 
@@ -7,13 +7,13 @@ let sortField = null, sortDir = -1;
 
 const IMPACTO_NUM = { 'Crítico': 5, 'Alto': 4, 'Medio': 3, 'Bajo': 2, 'Mínimo': 1 };
 
-// ─── v1.5: PERSISTENCIA LOCAL ─────────────────────────────────────────────────
+// â”€â”€â”€ v1.5: PERSISTENCIA LOCAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const TRAIL_KEY = 'laalt_mini_trail';
 const EDITS_KEY = 'laalt_mini_edits';
-let editedMap   = {};   // id → { campo: valor } — overrides sobre el JSON original
-let editingId   = null; // id del control que está siendo editado en este momento
+let editedMap   = {};   // id â†’ { campo: valor } â€” overrides sobre el JSON original
+let editingId   = null; // id del control que estÃ¡ siendo editado en este momento
 
-// ─── INICIO ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ INICIO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function fetchWithRetry(url, retries = 3, delayMs = 800) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -34,9 +34,9 @@ async function init() {
   };
 
   try {
-    const raw = await fetchWithRetry('data/audit_matrix.json');
+    const raw = normalizeDeep(await fetchWithRetry('data/audit_matrix.json'));
     if (!Array.isArray(raw) || raw.length === 0) {
-      errorRow('audit_matrix.json está vacío o tiene formato inválido.');
+      errorRow('audit_matrix.json esta vacio o tiene formato invalido.');
       return;
     }
     fullData = raw.map(item => enrichRiskData(flattenItem(item)));
@@ -58,14 +58,14 @@ async function init() {
     window.addEventListener('resize', handleResponsiveView);
     updateTrailBadge();
   } catch(err) {
-    errorRow('Error al cargar audit_matrix.json — usá Live Server o servidor local. ' +
+    errorRow('Error al cargar audit_matrix.json - usa un servidor local. ' +
              `Detalle: ${err.message}`);
   }
 }
 
-// ─── APLANAR ESTRUCTURA NESTED → FLAT ────────────────────────────────────────
+// â”€â”€â”€ APLANAR ESTRUCTURA NESTED â†’ FLAT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // El JSON v1.4 tiene sub-objetos; este paso produce un objeto plano para
-// compatibilidad con todo el resto del código.
+// compatibilidad con todo el resto del cÃ³digo.
 function flattenItem(item) {
   const def    = item.control_definition     || {};
   const assess = item.audit_assessment       || {};
@@ -124,12 +124,12 @@ function flattenItem(item) {
   };
 }
 
-// ─── ENRIQUECER DATOS DE RIESGO ──────────────────────────────────────────────
-// v1.4: scoring ponderado + penalizaciones de gestión + flags de riesgo
+// â”€â”€â”€ ENRIQUECER DATOS DE RIESGO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// v1.4: scoring ponderado + penalizaciones de gestiÃ³n + flags de riesgo
 //
 // El riesgo residual no solo depende de la efectividad del control,
-// sino de la calidad de su gestión. Un hallazgo sin owner, vencido,
-// o abierto sin iniciar → el riesgo real es mayor que el teórico.
+// sino de la calidad de su gestiÃ³n. Un hallazgo sin owner, vencido,
+// o abierto sin iniciar â†’ el riesgo real es mayor que el teÃ³rico.
 function enrichRiskData(item) {
   const impNum    = IMPACTO_NUM[item.impacto] || 3;
   const prob      = item.probabilidad || 3;
@@ -138,10 +138,10 @@ function enrichRiskData(item) {
   const diseno    = item.diseno_control    || 1;
   const operacion = item.operacion_control || 1;
 
-  // Pesos según naturaleza del control
-  // Automatizado: la operación pesa más (difícil de diseñar, fácil de operar)
-  // Manual:       el diseño pesa más (el procedimiento es el activo principal)
-  // Híbrido:      pesos iguales
+  // Pesos segÃºn naturaleza del control
+  // Automatizado: la operaciÃ³n pesa mÃ¡s (difÃ­cil de diseÃ±ar, fÃ¡cil de operar)
+  // Manual:       el diseÃ±o pesa mÃ¡s (el procedimiento es el activo principal)
+  // HÃ­brido:      pesos iguales
   let wD, wO;
   if      (item.naturaleza_control === 'Automatizado') { wD = 0.35; wO = 0.65; }
   else if (item.naturaleza_control === 'Manual')       { wD = 0.65; wO = 0.35; }
@@ -154,14 +154,14 @@ function enrichRiskData(item) {
   // Aging del hallazgo
   const aging = calcAging(item.fecha_compromiso);
 
-  // ── Penalizaciones de gestión (v1.4) ──────────────────────────────────────
-  // Principio: un hallazgo mal gestionado tiene más riesgo real que el
+  // â”€â”€ Penalizaciones de gestiÃ³n (v1.4) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Principio: un hallazgo mal gestionado tiene mÃ¡s riesgo real que el
   // calculado por la efectividad del control. Los factores son deliberadamente
-  // simples y explicables (no fórmulas opacas).
+  // simples y explicables (no fÃ³rmulas opacas).
   //
-  //   +15% deadline vencido     → remediación demorada amplifica la exposición
-  //   +10% sin owner asignado   → sin responsable, no hay remediación posible
-  //   +5%  hallazgo Abierto     → aún no se inició ninguna acción correctiva
+  //   +15% deadline vencido     â†’ remediaciÃ³n demorada amplifica la exposiciÃ³n
+  //   +10% sin owner asignado   â†’ sin responsable, no hay remediaciÃ³n posible
+  //   +5%  hallazgo Abierto     â†’ aÃºn no se iniciÃ³ ninguna acciÃ³n correctiva
   //
   // El resultado no puede superar el riesgo inherente (techo natural).
   let penalizacion = 0;
@@ -169,15 +169,15 @@ function enrichRiskData(item) {
   if (!item.owner_remediacion)             penalizacion += 0.10;
   if (item.estado_hallazgo === 'Abierto')  penalizacion += 0.05;
 
-  const residualBase = residual; // valor antes de penalizar → visible en UI como "Base"
+  const residualBase = residual; // valor antes de penalizar â†’ visible en UI como "Base"
 
   if (penalizacion > 0) {
     residual = Math.min(inherente, Math.round(residual * (1 + penalizacion)));
   }
 
-  // ── Flags de riesgo (v1.4) ───────────────────────────────────────────────
-  // Señales de alerta que superan el scoring individual.
-  // Combinar condiciones revela situaciones que requieren atención inmediata.
+  // â”€â”€ Flags de riesgo (v1.4) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // SeÃ±ales de alerta que superan el scoring individual.
+  // Combinar condiciones revela situaciones que requieren atenciÃ³n inmediata.
   const riskFlags = [];
   if (inherente >= 12 && aging.status === 'vencido')
     riskFlags.push('critico-vencido');
@@ -201,7 +201,7 @@ function enrichRiskData(item) {
   };
 }
 
-// ─── CÁLCULO DE AGING ─────────────────────────────────────────────────────────
+// â”€â”€â”€ CÃLCULO DE AGING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function calcAging(fechaCompromiso) {
   if (!fechaCompromiso) return { dias: null, status: 'sin-fecha' };
   const today    = new Date();
@@ -216,7 +216,7 @@ function calcAging(fechaCompromiso) {
   return { dias, status };
 }
 
-// ─── CLASIFICAR NIVEL DE RIESGO ──────────────────────────────────────────────
+// â”€â”€â”€ CLASIFICAR NIVEL DE RIESGO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function riesgoNivel(valor) {
   if (valor >= 18) return { label: 'Crítico', cls: 'critico' };
   if (valor >= 12) return { label: 'Alto',    cls: 'alto' };
@@ -224,7 +224,7 @@ function riesgoNivel(valor) {
   return               { label: 'Bajo',    cls: 'bajo' };
 }
 
-// ─── MAPEO DE CLASES CSS ─────────────────────────────────────────────────────
+// â”€â”€â”€ MAPEO DE CLASES CSS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function estadoClass(estado) {
   const map = {
     'No implementado': 'noimpl',
@@ -266,7 +266,7 @@ function confianzaClass(nivel) {
   return map[nivel] || 'medio';
 }
 
-// ─── HELPER: AGING BADGE ─────────────────────────────────────────────────────
+// â”€â”€â”€ HELPER: AGING BADGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderAgingBadge(item) {
   const { diasHastaCompromiso: dias, agingStatus: status, fecha_compromiso } = item;
   if (!fecha_compromiso || status === 'sin-fecha') {
@@ -281,8 +281,8 @@ function renderAgingBadge(item) {
   return `<span class="badge-aging badge-aging-termino">${dias}d</span>`;
 }
 
-// ─── HELPER: RISK FLAGS BADGES ───────────────────────────────────────────────
-// Señales de alerta compuestas — más allá del scoring individual.
+// â”€â”€â”€ HELPER: RISK FLAGS BADGES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// SeÃ±ales de alerta compuestas â€” mÃ¡s allÃ¡ del scoring individual.
 function renderRiskFlags(item) {
   if (!item.riskFlags || !item.riskFlags.length) return '';
   return item.riskFlags.map(flag => {
@@ -301,15 +301,15 @@ function renderRiskFlags(item) {
   }).join('');
 }
 
-// ─── HELPER: PENALIZACIÓN BADGE ──────────────────────────────────────────────
+// â”€â”€â”€ HELPER: PENALIZACIÃ“N BADGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderPenalizacionBadge(item) {
   if (!item.penalizacion_gestion) return '';
   const pct = Math.round(item.penalizacion_gestion * 100);
-  return `<span class="badge-penalizacion" title="Penalización por seguimiento deficiente: +${pct}%">+${pct}%</span>`;
+  return `<span class="badge-penalizacion" title="Penalizacion por seguimiento deficiente: +${pct}%">+${pct}%</span>`;
 }
 
-// ─── HELPER: CÁLCULO DE ANTIGÜEDAD ───────────────────────────────────────────
-// Días desde la apertura del hallazgo hasta hoy.
+// â”€â”€â”€ HELPER: CÃLCULO DE ANTIGÃœEDAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// DÃ­as desde la apertura del hallazgo hasta hoy.
 function calcAntiguedad(fechaApertura) {
   if (!fechaApertura) return null;
   const today   = new Date(); today.setHours(0,0,0,0);
@@ -317,9 +317,9 @@ function calcAntiguedad(fechaApertura) {
   return Math.round((today - apertura) / (1000 * 60 * 60 * 24));
 }
 
-// ─── TRIAGE BAR ──────────────────────────────────────────────────────────────
-// Banda de situación: visible solo cuando hay flags activos.
-// Muestra qué escalar hoy con un clic para aplicar el filtro correspondiente.
+// â”€â”€â”€ TRIAGE BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Banda de situaciÃ³n: visible solo cuando hay flags activos.
+// Muestra quÃ© escalar hoy con un clic para aplicar el filtro correspondiente.
 function renderTriageBar(data) {
   const bar = document.getElementById('triageBar');
   if (!bar) return;
@@ -343,7 +343,7 @@ function renderTriageBar(data) {
     ${so  ? `<button class="triage-item triage-sin-owner"       onclick="triageFilter('','','sin-owner')">◎ ${so} sin responsable</button>` : ''}
     ${hc  ? `<button class="triage-item triage-hallazgo-critico" onclick="triageFilter('','Abierto')">▲ ${hc} crítico${hc>1?'s':''} abierto${hc>1?'s':''}</button>` : ''}
     ${asa ? `<button class="triage-item triage-aceptado-sin-aprobador" onclick="triageFilter('','','aceptado-sin-aprobador')">⚠ ${asa} aceptación sin aprobador</button>` : ''}
-    <span class="triage-hint">→ clic para filtrar · ${total} situación${total>1?'es':''} requieren atención</span>`;
+    <span class="triage-hint">-> clic para filtrar · ${total} situacion${total>1?'es':''} requieren atencion</span>`;
 }
 
 // Aplica filtros desde el triage bar
@@ -371,14 +371,14 @@ function triageFilter(aging, hallazgo, riskFlag) {
   applyFilters();
 }
 
-// ─── HELPER: FORMATO DE FECHA ─────────────────────────────────────────────────
+// â”€â”€â”€ HELPER: FORMATO DE FECHA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function formatFecha(fecha) {
-  if (!fecha) return '—';
+  if (!fecha) return 'â€”';
   const [y, m, d] = fecha.split('-');
   return `${d}/${m}/${y.slice(2)}`;
 }
 
-// ─── FILTROS ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ FILTROS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildFilters() {
   const dominios = [...new Set(fullData.map(d => d.dominio))];
   const sel = document.getElementById('filterDominio');
@@ -435,7 +435,7 @@ function resetFilters() {
   document.querySelectorAll('th.sortable').forEach(th => th.classList.remove('sort-asc','sort-desc'));
 }
 
-// ─── ORDENAMIENTO ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ ORDENAMIENTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function sortBy(field) {
   if (sortField === field) { sortDir *= -1; }
   else { sortField = field; sortDir = -1; }
@@ -458,7 +458,7 @@ function applySort() {
   });
 }
 
-// ─── SUMMARY ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ SUMMARY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderSummary(data) {
   const total    = data.length;
   const criticos = data.filter(d => d.impacto === 'Crítico').length;
@@ -468,22 +468,22 @@ function renderSummary(data) {
   const dominios = new Set(data.map(d => d.dominio)).size;
   const avgEf    = total
     ? (data.reduce((s, d) => s + d.efectividad_control, 0) / total).toFixed(2)
-    : '—';
+    : '-';
   const efPct    = total ? (avgEf / 5 * 100).toFixed(0) : 0;
 
-  // Contar flags críticos para el resumen
+  // Contar flags crÃ­ticos para el resumen
   const flagCriticos = data.filter(d => d.riskFlags && d.riskFlags.length > 0).length;
 
   document.getElementById('summary').innerHTML = `
     <div class="stat-card">
-      <span class="stat-label">Controles en revisión</span>
+      <span class="stat-label">Controles en revision</span>
       <div class="stat-value">${total}</div>
       <div class="stat-sub">de ${fullData.length} totales · ${dominios} dominios del dataset demo</div>
     </div>
     <div class="stat-card card-alert">
-      <span class="stat-label">Impacto Crítico</span>
+      <span class="stat-label">Impacto critico</span>
       <div class="stat-value">${criticos}</div>
-      <div class="stat-sub">requieren atención inmediata</div>
+      <div class="stat-sub">requieren atenciÃ³n inmediata</div>
     </div>
     <div class="stat-card card-danger">
       <span class="stat-label">Hallazgos activos</span>
@@ -492,13 +492,13 @@ function renderSummary(data) {
     </div>
     <div class="stat-card ${vencidos > 0 ? 'card-vencido' : 'card-warn'}">
       <span class="stat-label">Deadlines</span>
-      <div class="stat-value">${vencidos > 0 ? vencidos + ' vencido' + (vencidos > 1 ? 's' : '') : proximos + ' próximo' + (proximos !== 1 ? 's' : '')}</div>
-      <div class="stat-sub">${vencidos > 0 ? 'requieren escalamiento' : proximos > 0 ? '≤7 días para vencer' : 'todos en término'}</div>
+      <div class="stat-value">${vencidos > 0 ? vencidos + ' vencido' + (vencidos > 1 ? 's' : '') : proximos + ' proximo' + (proximos !== 1 ? 's' : '')}</div>
+      <div class="stat-sub">${vencidos > 0 ? 'requieren escalamiento' : proximos > 0 ? '<=7 dias para vencer' : 'todos en termino'}</div>
     </div>
     <div class="stat-card">
       <span class="stat-label">Efectividad promedio</span>
       <div class="stat-value">${avgEf}</div>
-      <div class="stat-sub">scoring visual ponderado D·O / escala 1–5</div>
+      <div class="stat-sub">scoring visual ponderado D·O / escala 1-5</div>
       <div class="madurez-bar"><div class="madurez-fill" style="width:${efPct}%"></div></div>
     </div>`;
 
@@ -508,9 +508,10 @@ function renderSummary(data) {
       : `${data.length} resultado${data.length !== 1 ? 's' : ''} filtrado${data.length !== 1 ? 's' : ''}`;
 
   renderTriageBar(data);
+  sanitizeVisibleStrings();
 }
 
-// ─── TABLA (DESKTOP) ─────────────────────────────────────────────────────────
+// â”€â”€â”€ TABLA (DESKTOP) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // v1.4: flags de riesgo compuestos visibles en columna de riesgo
 function renderTable(data) {
   const tbody = document.getElementById('tableBody');
@@ -529,7 +530,7 @@ function renderTable(data) {
 
     const rr = riesgoNivel(item.riesgo_residual);
 
-    // Owner: null → alerta naranja
+    // Owner: null â†’ alerta naranja
     const ownerHtml = item.owner_remediacion
       ? `<span class="owner-text">${item.owner_remediacion}</span>`
       : `<span class="badge-owner-unset">⚠ Sin asignar</span>`;
@@ -537,13 +538,13 @@ function renderTable(data) {
     // Risk flags compactos para la celda de riesgo
     const flagsHtml = renderRiskFlags(item);
 
-    // Riesgo residual: muestra base → ajustado cuando hay penalización
+    // Riesgo residual: muestra base â†’ ajustado cuando hay penalizaciÃ³n
     const penalizado = item.penalizacion_gestion && item.riesgo_residual !== item.riesgo_residual_base;
     const pct = penalizado ? Math.round(item.penalizacion_gestion * 100) : 0;
     const rrCell = penalizado
-      ? `<div class="riesgo-delta-cell" title="Base: ${item.riesgo_residual_base} → Ajustado por gestión deficiente (+${pct}%): ${item.riesgo_residual}">
+      ? `<div class="riesgo-delta-cell" title="Base: ${item.riesgo_residual_base} -> Ajustado por gestion deficiente (+${pct}%): ${item.riesgo_residual}">
            <span class="riesgo-base-val">${item.riesgo_residual_base}</span>
-           <span class="riesgo-delta-arrow">→</span>
+           <span class="riesgo-delta-arrow">-></span>
            <span class="riesgo-num riesgo-${rr.cls}">${item.riesgo_residual}</span>
            <span class="badge-penalizacion">+${pct}%</span>
          </div>`
@@ -579,9 +580,10 @@ function renderTable(data) {
     });
     tbody.appendChild(tr);
   });
+  sanitizeVisibleStrings();
 }
 
-// ─── CARDS (MOBILE) ──────────────────────────────────────────────────────────
+// â”€â”€â”€ CARDS (MOBILE) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderCards(data) {
   const container = document.getElementById('cardsContainer');
   if (!container) return;
@@ -636,19 +638,20 @@ function renderCards(data) {
     });
     container.appendChild(card);
   });
+  sanitizeVisibleStrings();
 }
 
-// ─── DETALLE ─────────────────────────────────────────────────────────────────
-// v1.4: orden orientado a decisión (no a información)
+// â”€â”€â”€ DETALLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// v1.4: orden orientado a decisiÃ³n (no a informaciÃ³n)
 //
-// 1. Encabezado: riesgo inherente → residual · scoring · badges
-// 2. Brecha detectada · resultado · confianza
-  // 3. Seguimiento del hallazgo (lectura visual: responsable, deadline, decisión, ciclo de vida)
-// 4. Evidencia requerida vs observada + criterio de evaluación
-// 5. Observación del auditor
-// 6. Análisis de impacto (negocio · operativo · regulatorio)
+// 1. Encabezado: riesgo inherente â†’ residual Â· scoring Â· badges
+// 2. Brecha detectada Â· resultado Â· confianza
+  // 3. Seguimiento del hallazgo (lectura visual: responsable, deadline, decisiÃ³n, ciclo de vida)
+// 4. Evidencia requerida vs observada + criterio de evaluaciÃ³n
+// 5. ObservaciÃ³n del auditor
+// 6. AnÃ¡lisis de impacto (negocio Â· operativo Â· regulatorio)
 // 7. Riesgo legal / compliance
-// 8. Plan de remediación + contexto del control
+// 8. Plan de remediaciÃ³n + contexto del control
 function renderDetail(item) {
   const panel = document.getElementById('detailPanel');
   const hint  = document.getElementById('detailHint');
@@ -666,7 +669,7 @@ function renderDetail(item) {
   else if (item.naturaleza_control === 'Manual')       pesosLabel = 'D×0.65 + O×0.35';
   else                                                  pesosLabel = 'D×0.50 + O×0.50';
 
-  // Penalización + residual base vs ajustado — visible en el encabezado
+  // PenalizaciÃ³n + residual base vs ajustado â€” visible en el encabezado
   const penalizado = item.penalizacion_gestion && item.riesgo_residual !== item.riesgo_residual_base;
   let penalText = '';
   if (penalizado) {
@@ -680,23 +683,23 @@ function renderDetail(item) {
       <span class="penal-delta">
         Residual base: <span class="riesgo-num riesgo-${rrBase.cls}" style="font-size:11px">${item.riesgo_residual_base}</span>
         &nbsp;→&nbsp;
-        Ajustado por gestión: <span class="riesgo-num riesgo-${rr.cls}" style="font-size:11px">${item.riesgo_residual}</span>
-        <span class="badge-penalizacion">+${pct}% gestión</span>
+        Ajustado por gestion: <span class="riesgo-num riesgo-${rr.cls}" style="font-size:11px">${item.riesgo_residual}</span>
+        <span class="badge-penalizacion">+${pct}% gestion</span>
       </span>
       <span class="penalizacion-motivos">${motivos.join(' · ')}</span>
     </div>`;
   }
 
-  // ── Sección 3: Seguimiento del hallazgo ───────────────────────────────────
+  // â”€â”€ SecciÃ³n 3: Seguimiento del hallazgo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const ownerDisplay = item.owner_remediacion
     ? item.owner_remediacion
     : `<span class="badge-owner-unset">⚠ Sin responsable asignado — hallazgo sin responsable formal</span>`;
 
   const agingDisplay = renderAgingBadge(item);
   const agingNote = item.agingStatus === 'vencido'
-    ? `<span class="aging-note aging-note-vencido">Deadline vencido hace ${Math.abs(item.diasHastaCompromiso)} día(s). Requiere escalamiento.</span>`
+    ? `<span class="aging-note aging-note-vencido">Deadline vencido hace ${Math.abs(item.diasHastaCompromiso)} dia(s). Requiere escalamiento.</span>`
     : item.agingStatus === 'proximo'
-    ? `<span class="aging-note aging-note-proximo">Vence en ${item.diasHastaCompromiso} día(s). Confirmar avance.</span>`
+    ? `<span class="aging-note aging-note-proximo">Vence en ${item.diasHastaCompromiso} dia(s). Confirmar avance.</span>`
     : '';
 
   const decisionHtml = (() => {
@@ -709,10 +712,10 @@ function renderDetail(item) {
       html += item.aprobador_riesgo
         ? `<span class="aprobador-tag">Aprobado por: ${item.aprobador_riesgo}</span>`
         : `<span class="badge-owner-unset" style="margin-left:6px">⚠ Sin aprobador formal</span>`;
-      // Justificación
+      // JustificaciÃ³n
       if (item.justificacion_aceptacion) {
         html += `<div class="justificacion-aceptacion">
-          <span class="ev-label ev-alerta">⚠ Justificación de aceptación</span>
+          <span class="ev-label ev-alerta">⚠ Justificacion de aceptacion</span>
           <p>${item.justificacion_aceptacion}</p>
         </div>`;
       }
@@ -736,7 +739,7 @@ function renderDetail(item) {
       <div class="lt-step ${item.fecha_verificacion ? 'lt-step-done' : 'lt-step-pending'}">
         <div class="lt-dot ${item.fecha_verificacion ? 'lt-dot-done' : 'lt-dot-pending'}"></div>
         <div class="lt-info">
-          <span class="lt-label">Verificación</span>
+          <span class="lt-label">Verificacion</span>
           <span class="lt-date">${item.fecha_verificacion ? formatFecha(item.fecha_verificacion) : 'Pendiente'}</span>
         </div>
       </div>
@@ -751,8 +754,8 @@ function renderDetail(item) {
       </div>
     </div>
     ${diasAbierto !== null ? `<div class="lifecycle-antiguedad ${diasAbierto > 180 ? 'ant-alto' : diasAbierto > 60 ? 'ant-medio' : 'ant-normal'}">
-      Hallazgo abierto hace <strong>${diasAbierto}</strong> día${diasAbierto !== 1 ? 's' : ''}
-      ${diasAbierto > 180 ? ' · Antigüedad elevada — considerar escalamiento' : ''}
+      Hallazgo abierto hace <strong>${diasAbierto}</strong> dia${diasAbierto !== 1 ? 's' : ''}
+      ${diasAbierto > 180 ? ' · Antiguedad elevada — considerar escalamiento' : ''}
     </div>` : ''}`;
 
   // Risk flags en el detalle
@@ -760,17 +763,17 @@ function renderDetail(item) {
     ? `<div class="detail-flags-row">${renderRiskFlags(item)}</div>`
     : '';
 
-  // Explicación del riesgo residual → se muestra junto al scoring, no en sección 3
+  // ExplicaciÃ³n del riesgo residual â†’ se muestra junto al scoring, no en secciÃ³n 3
   const explicacionHeaderHtml = item.explicacion_riesgo_residual
     ? `<div class="explicacion-residual-inline">
-        <span class="ev-label ev-criterio" style="font-size:8px">Por qué este residual</span>
+        <span class="ev-label ev-criterio" style="font-size:8px">Por que este residual</span>
         <p style="margin:0;font-size:11px;color:var(--text-secondary);line-height:1.5">${item.explicacion_riesgo_residual}</p>
       </div>`
     : '';
 
   cont.innerHTML = `<div class="detail-grid">
 
-    <!-- 1. ENCABEZADO: RIESGO I → R -->
+    <!-- 1. ENCABEZADO: RIESGO I -> R -->
     <div class="detail-riesgo-header">
       <div class="detail-riesgo-title">${item.riesgo}</div>
       <div class="detail-scoring-row">
@@ -807,7 +810,7 @@ function renderDetail(item) {
 
     <!-- 3. SEGUIMIENTO VISUAL DEL HALLAZGO -->
     <div class="detail-cell detail-seguimiento-block span-full">
-      <h4>📋 Seguimiento visual del hallazgo</h4>
+      <h4>Seguimiento visual del hallazgo</h4>
       <div class="seguimiento-grid">
         <div class="gestion-row">
           <span class="gestion-label">Responsable:</span>
@@ -818,7 +821,7 @@ function renderDetail(item) {
           <span>${formatFecha(item.fecha_compromiso)} &nbsp;${agingDisplay} ${agingNote}</span>
         </div>
         <div class="gestion-row">
-          <span class="gestion-label">Decisión de riesgo:</span>
+          <span class="gestion-label">Decision de riesgo:</span>
           <span>${decisionHtml}</span>
         </div>
         <div class="gestion-row">
@@ -833,7 +836,7 @@ function renderDetail(item) {
       <h4>Evidencia requerida vs observada en campo</h4>
       <div class="evidencia-split">
         <div class="evidencia-block">
-          <span class="ev-label">Diseño del control</span>
+          <span class="ev-label">Diseno del control</span>
           <p>${item.evidencia_minima?.diseno ?? '—'}</p>
         </div>
         <div class="evidencia-block">
@@ -847,24 +850,24 @@ function renderDetail(item) {
       </div>
       ${item.criterio_evaluacion ? `
       <div class="criterio-evaluacion-block">
-        <span class="ev-label ev-criterio">Criterio de evaluación</span>
+        <span class="ev-label ev-criterio">Criterio de evaluacion</span>
         <p>${item.criterio_evaluacion}</p>
       </div>` : ''}
     </div>
 
-    <!-- 5. OBSERVACIÓN DEL AUDITOR -->
+    <!-- 5. OBSERVACION DEL AUDITOR -->
     ${item.observacion_auditor ? `
     <div class="detail-cell span-full detail-observacion-block">
-      <h4>🔍 Observación del auditor</h4>
+      <h4>Observacion del auditor</h4>
       <p class="observacion-texto">${item.observacion_auditor}</p>
       <div style="margin-top:8px;font-size:11px;color:var(--text-muted)">
-        Última revisión: ${item.ultima_revision ?? '—'} · Responsable técnico: ${item.responsable ?? '—'}
+        Ultima revision: ${item.ultima_revision ?? '—'} · Responsable tecnico: ${item.responsable ?? '—'}
       </div>
     </div>` : ''}
 
-    <!-- 6. ANÁLISIS DE IMPACTO -->
+    <!-- 6. ANALISIS DE IMPACTO -->
     <div class="detail-cell span-full">
-      <h4>Análisis de impacto</h4>
+      <h4>Analisis de impacto</h4>
       <div class="impacto-triple">
         <div class="impacto-block">
           <span class="ev-label">Negocio</span>
@@ -883,20 +886,20 @@ function renderDetail(item) {
 
     <!-- 7. RIESGO LEGAL / COMPLIANCE -->
     <div class="detail-cell detail-legal-block span-full">
-      <h4>⚖ Riesgo legal / Compliance</h4>
+      <h4>Riesgo legal / Compliance</h4>
       <p>${item.riesgo_legal ?? '—'}</p>
       <div style="margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
         <span class="badge-compliance">${item.implicancia_compliance}</span>
-        <span style="font-size:11px;color:var(--text-muted)">Por qué importa: ${item.por_que_importa ?? '—'}</span>
+        <span style="font-size:11px;color:var(--text-muted)">Por que importa: ${item.por_que_importa ?? '—'}</span>
       </div>
     </div>
 
-    <!-- 8. PLAN DE REMEDIACIÓN + CONTEXTO -->
+    <!-- 8. PLAN DE REMEDIACION + CONTEXTO -->
     <div class="detail-cell">
-      <h4>Plan de remediación</h4>
+      <h4>Plan de remediacion</h4>
       <p>${item.plan_remediacion ?? '—'}</p>
       <p style="margin-top:10px;font-size:11px;color:var(--text-muted)">
-        Resp. técnico: ${item.responsable} · ${item.frecuencia}
+        Resp. tecnico: ${item.responsable} · ${item.frecuencia}
       </p>
     </div>
     <div class="detail-cell">
@@ -911,6 +914,7 @@ function renderDetail(item) {
   </div>`;
 
   setTimeout(() => document.getElementById('detailPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+  sanitizeVisibleStrings();
 }
 
 function clearDetail() {
@@ -918,15 +922,15 @@ function clearDetail() {
   const hint  = document.getElementById('detailHint');
   const cont  = document.getElementById('detailContent');
   panel.classList.remove('has-content');
-  hint.textContent = 'Seleccioná un control para ver el análisis completo';
+  hint.textContent = 'Selecciona un control para ver el analisis completo';
   cont.className = 'detail-empty';
-  cont.innerHTML = '<div class="detail-placeholder"><span>↑</span><p>Clic en cualquier fila o "Abrir lectura"</p></div>';
+  cont.innerHTML = '<div class="detail-placeholder"><span>↑</span><p>Hace clic en cualquier fila o en "Abrir lectura"</p></div>';
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderEfectividad(diseno, operacion) {
   const d = diseno || 1, o = operacion || 1;
-  return `<div class="efect-bars" title="Diseño: ${d}/5 · Operación: ${o}/5">
+  return `<div class="efect-bars" title="Diseno: ${d}/5 · Operacion: ${o}/5">
     <div class="efect-row"><span class="efect-label">D</span>${renderDots(d)}</div>
     <div class="efect-row"><span class="efect-label">O</span>${renderDots(o)}</div>
   </div>`;
@@ -940,7 +944,7 @@ function renderDots(val, max = 5) {
   }</div>`;
 }
 
-// ─── RESPONSIVE ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ RESPONSIVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function handleResponsiveView() {
   const isMobile = window.innerWidth <= 768;
   const tableSection = document.getElementById('tableSection');
@@ -949,7 +953,7 @@ function handleResponsiveView() {
   if (cardsSection) cardsSection.style.display = isMobile ? 'block' : 'none';
 }
 
-// ─── v1.5: PERSISTENCIA LOCAL ─────────────────────────────────────────────────
+// â”€â”€â”€ v1.5: PERSISTENCIA LOCAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function loadPersistence() {
   try {
@@ -980,7 +984,7 @@ function updateTrailBadge() {
   badge.style.display = count ? 'inline-flex' : 'none';
 }
 
-// ─── v1.5: EDICIÓN INLINE ────────────────────────────────────────────────────
+// â”€â”€â”€ v1.5: EDICIÃ“N INLINE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function openEditPanel(id) {
   if (editingId === id) { closeEditPanel(); return; }
@@ -1009,7 +1013,7 @@ function openEditPanel(id) {
             </select>
           </label>
           <label class="edit-field-group">
-            <span>Responsable de remediación</span>
+            <span>Responsable de remediacion</span>
             <input type="text" id="edit-owner-${id}" class="edit-input"
               value="${item.owner_remediacion || ''}" placeholder="Sin asignar" />
           </label>
@@ -1019,7 +1023,7 @@ function openEditPanel(id) {
               value="${item.fecha_compromiso || ''}" />
           </label>
           <label class="edit-field-group">
-            <span>Decisión de riesgo</span>
+            <span>Decision de riesgo</span>
             <select id="edit-decision-${id}" class="edit-select">
               ${['Remediar','Aceptado','Transferir','Mitigar'].map(v =>
                 `<option value="${v}"${item.decision_riesgo === v ? ' selected' : ''}>${v}</option>`
@@ -1076,7 +1080,7 @@ function saveEdit(id) {
   showToast(`C${String(id).padStart(2,'0')} actualizado en modo demo`);
 }
 
-// ─── v1.5: EXPORT JSON ───────────────────────────────────────────────────────
+// â”€â”€â”€ v1.5: EXPORT JSON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function exportJSON() {
   const exportData = fullData.map(item => ({
@@ -1126,13 +1130,71 @@ function exportJSON() {
   showToast('Snapshot demo exportado');
 }
 
-// ─── v1.5: RESET CAMBIOS ─────────────────────────────────────────────────────
+function exportSelectedSummary() {
+  const item = fullData.find(entry => entry.id === selectedId) || fullData[0];
+
+  if (!item) {
+    showToast('No hay hallazgos para exportar');
+    return;
+  }
+
+  const rr = riesgoNivel(item.riesgo_residual);
+  const lines = [
+    '# Resumen demo de hallazgo',
+    '',
+    `Control: #${String(item.id).padStart(2, '0')}`,
+    `Dominio: ${item.dominio}`,
+    `Riesgo identificado: ${item.riesgo}`,
+    `Estado del control: ${item.estado_control}`,
+    `Estado del hallazgo: ${item.estado_hallazgo}`,
+    `Responsable: ${item.owner_remediacion || 'Sin responsable asignado'}`,
+    `Deadline: ${item.fecha_compromiso || 'Sin fecha'}`,
+    `Aging: ${item.diasHastaCompromiso ?? 'Sin fecha'}`,
+    `Riesgo residual: ${item.riesgo_residual} (${rr.label})`,
+    `Decision de riesgo: ${item.decision_riesgo || 'Remediar'}`,
+    '',
+    'Brecha detectada',
+    item.brecha_detectada || '-',
+    '',
+    'Observacion del auditor',
+    item.observacion_auditor || '-',
+    '',
+    'Impacto negocio',
+    item.impacto_negocio || '-',
+    '',
+    'Impacto operativo',
+    item.impacto_operativo || '-',
+    '',
+    'Impacto regulatorio',
+    item.impacto_regulatorio || '-',
+    '',
+    'Riesgo legal / compliance',
+    item.riesgo_legal || '-',
+    '',
+    'Plan de remediacion',
+    item.plan_remediacion || '-',
+    '',
+    'Contexto',
+    'Resumen generado desde Cyber Audit Mini Lab como demo visual del ecosistema LAALT.',
+  ];
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `hallazgo_demo_${String(item.id).padStart(2, '0')}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Resumen demo descargado');
+}
+
+// â”€â”€â”€ v1.5: RESET CAMBIOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function resetChanges() {
   if (!Object.keys(editedMap).length && !getTrail().length) {
     showToast('Sin cambios para resetear'); return;
   }
-  if (!confirm('¿Resetear todos los cambios y volver al dataset original?\nEsto borrará el historial.')) return;
+  if (!confirm('¿Resetear todos los cambios y volver al dataset original?\nEsto borrara el historial.')) return;
   editedMap = {};
   localStorage.removeItem(EDITS_KEY);
   localStorage.removeItem(TRAIL_KEY);
@@ -1148,7 +1210,7 @@ async function resetChanges() {
   } catch(e) { console.error(e); }
 }
 
-// ─── v1.5: TRAIL PANEL ───────────────────────────────────────────────────────
+// â”€â”€â”€ v1.5: TRAIL PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function toggleTrailPanel() {
   const panel = document.getElementById('trailPanel');
@@ -1163,13 +1225,13 @@ function renderTrailPanel() {
   if (!panel) return;
   const trail = getTrail();
   if (!trail.length) {
-    panel.innerHTML = '<p class="trail-empty">Sin simulaciones locales registradas todavía.</p>';
+    panel.innerHTML = '<p class="trail-empty">Sin simulaciones locales registradas todavia.</p>';
     return;
   }
   panel.innerHTML = `
     <div class="trail-header">
-      <span>Historial local de simulación (${trail.length})</span>
-      <button class="btn-reset-changes" onclick="resetChanges()">↺ Resetear todo</button>
+      <span>Historial local de simulacion (${trail.length})</span>
+      <button class="btn-reset-changes" onclick="resetChanges()">↻ Resetear todo</button>
     </div>
     <div class="trail-list">
       ${trail.map(e => `
@@ -1184,7 +1246,7 @@ function renderTrailPanel() {
     </div>`;
 }
 
-// ─── v1.5: TOAST ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ v1.5: TOAST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function showToast(msg) {
   let toast = document.getElementById('toast');
@@ -1200,4 +1262,96 @@ function showToast(msg) {
   toast._t = setTimeout(() => toast.classList.remove('toast-show'), 2200);
 }
 
-init();
+function repairVisibleText(value) {
+  if (typeof value !== 'string') return value;
+
+  return value
+    .replaceAll('Â·', '·')
+    .replaceAll('â†’', '→')
+    .replaceAll('â€”', '—')
+    .replaceAll('â€“', '–')
+    .replaceAll('âœ“', '✓')
+    .replaceAll('âš ', '⚠')
+    .replaceAll('âš¡', '⚡')
+    .replaceAll('âš–', '⚖')
+    .replaceAll('ðŸ“‹', '📋')
+    .replaceAll('ðŸ”', '🔍')
+    .replaceAll('Ã¡', 'á')
+    .replaceAll('Ã©', 'é')
+    .replaceAll('Ã­', 'í')
+    .replaceAll('Ã³', 'ó')
+    .replaceAll('Ãº', 'ú')
+    .replaceAll('Ã', 'Á')
+    .replaceAll('Ã‰', 'É')
+    .replaceAll('Ã', 'Í')
+    .replaceAll('Ã“', 'Ó')
+    .replaceAll('Ãš', 'Ú')
+    .replaceAll('Ã±', 'ñ')
+    .replaceAll('Ã‘', 'Ñ')
+    .replaceAll('Ã¼', 'ü')
+    .replaceAll('Ãœ', 'Ü')
+    .replaceAll('\u00C3\u00A1', 'á')
+    .replaceAll('\u00C3\u00A9', 'é')
+    .replaceAll('\u00C3\u00AD', 'í')
+    .replaceAll('\u00C3\u00B3', 'ó')
+    .replaceAll('\u00C3\u00BA', 'ú')
+    .replaceAll('\u00C3\u0081', 'Á')
+    .replaceAll('\u00C3\u0089', 'É')
+    .replaceAll('\u00C3\u008D', 'Í')
+    .replaceAll('\u00C3\u0093', 'Ó')
+    .replaceAll('\u00C3\u009A', 'Ú')
+    .replaceAll('\u00C3\u00B1', 'ñ')
+    .replaceAll('\u00C3\u0091', 'Ñ')
+    .replaceAll('\u00C3\u00BC', 'ü')
+    .replaceAll('\u00C3\u009C', 'Ü')
+    .replaceAll('\u00E2\u20AC\u201D', '-')
+    .replaceAll('\u00E2\u20AC\u201C', '-')
+    .replaceAll('\u00E2\u2020\u2019', '->')
+    .replaceAll('\u00E2\u2030\u00A4', '<=')
+    .replaceAll('\u00C2\u00B7', '·')
+    .replaceAll('\u00E2\u0161\u00A0', '⚠')
+    .replaceAll('\u00E2\u0153\u008F', '✏')
+    .replaceAll('\u00E2\u20D7\u017D', '◎')
+    .replaceAll('\u00E2\u20AC\u00B2', '▲')
+    .replaceAll('\u00E2\u0161\u00A1', '⚡')
+    .replaceAll('\u00E2\u008F\u00B1', '⏱')
+    .replaceAll('\u00F0\u0178\u201C\u2039', '📋')
+    .replaceAll('\u00F0\u0178\u201D\u008D', '🔍')
+    .replaceAll('\u00E2\u0161\u201C', '⚖');
+}
+
+function normalizeDeep(value) {
+  if (Array.isArray(value)) return value.map(normalizeDeep);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, normalizeDeep(val)]));
+  }
+  return repairVisibleText(value);
+}
+
+function sanitizeVisibleStrings() {
+  document.title = repairVisibleText(document.title);
+
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  let node;
+  while ((node = walker.nextNode())) {
+    node.textContent = repairVisibleText(node.textContent);
+  }
+}
+
+function selectFeaturedDemoControl() {
+  const featured = fullData.find(item => item.id === 2) || fullData[0];
+
+  if (!featured) return;
+
+  selectedId = featured.id;
+  renderDetail(featured);
+
+  const row = document.querySelector(`#tableBody tr[data-id="${featured.id}"]`);
+  if (row) row.classList.add('selected');
+}
+
+init().then(() => {
+  sanitizeVisibleStrings();
+  selectFeaturedDemoControl();
+});
+
